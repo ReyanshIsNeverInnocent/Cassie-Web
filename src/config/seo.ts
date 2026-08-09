@@ -10,7 +10,7 @@ export const seoConfig = {
   description: 'A little more order, a little more levitation.',
   canonicalUrl: 'https://levitate-web.vercel.app/',
   // Replace this one value with any direct, public JPG/PNG/WebP image URL.
-  imageUrl: 'https://i.ibb.co/0pTLB0zQ/59813501297914334.jpg',
+  imageUrl: 'https://i.ibb.co/cSqRx6W7/flowerss.jpg',
   imageAlt: 'Levitate — Discord Bot',
   imageType: 'image/jpeg',
   imageWidth: 735,
