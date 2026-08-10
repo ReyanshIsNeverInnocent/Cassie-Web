@@ -26,7 +26,7 @@ export const site = {
   // total from `commandCategories` so it can never drift out of sync.
   bot: botConfig,
   // Update this whenever any website source or public-facing website content changes.
-  lastUpdated: "Sunday, August 9, '26 at 9:58 PM IST (UTC+05:30)",
+  lastUpdated: "Monday, August 10, '26 at 8:15 PM IST (UTC+05:30)",
 
   nav: [
     { label: "Home", href: "/" },
@@ -936,6 +936,15 @@ export const site = {
       icon: Layers,
       commands: [
         {
+          name: "$reactionroles",
+          aliases: ["rr"],
+          permission: "Manage Server",
+          description:
+            "Manage emoji-to-role mappings on existing messages with a simple add panel, direct add/remove actions, and server reset.",
+          usage:
+            "$reactionroles list\n$reactionroles add <message>\n$reactionroles add <message> <reaction emoji> <role>\n$reactionroles remove <message> <reaction emoji or role>\n$reactionroles removeall <message>\n$reactionroles reset",
+        },
+        {
           name: "$starboard",
           aliases: ["stars"],
           permission: "Manage Server",
@@ -1163,6 +1172,15 @@ export const site = {
           description:
             "Register a keyword and link up to 5 roles. All custom-role keywords use the server-wide access role configured with `$customrole access`. Max 15 keywords per server. Does not work with noprefix.",
           usage: "$customrole create <keyword> <@role> [@role2 …]",
+        },
+        {
+          name: "$customrole use",
+          aliases: ["cr", "crole"],
+          permission: null,
+          description:
+            "Assign or remove a custom-role keyword's linked roles from up to 10 users by mention, user ID, username, or display name.",
+          usage:
+            "$<keyword> <@user|user-id|username> …\n$<keyword> remove <@user|user-id|username> …",
         },
         {
           name: "$customrole access",
