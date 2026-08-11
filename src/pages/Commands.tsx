@@ -10,6 +10,7 @@ type CommandEntry = {
   usage: string;
   aliases?: readonly string[];
   permission?: string | null;
+  slash?: boolean;
 };
 
 const byName = (a: CommandEntry, b: CommandEntry) => a.name.localeCompare(b.name);
@@ -218,6 +219,11 @@ export default function Commands() {
                           {cmd.permission}
                         </span>
                       )}
+                      {cmd.slash === false && (
+                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-sky-500/10 text-sky-500 border border-sky-500/20">
+                          Prefix only
+                        </span>
+                      )}
                     </div>
                   )}
                   <div className="mt-3 cmd-usage">{cmd.usage}</div>
@@ -276,6 +282,11 @@ export default function Commands() {
                         <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-500 border border-amber-500/20">
                           <ShieldCheck className="h-2.5 w-2.5" />
                           {cmd.permission}
+                        </span>
+                      )}
+                      {cmd.slash === false && (
+                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-sky-500/10 text-sky-500 border border-sky-500/20">
+                          Prefix only
                         </span>
                       )}
                     </div>

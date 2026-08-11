@@ -47,10 +47,9 @@ export default function Navbar() {
     >
       <div className="container max-w-5xl">
         <nav
-          className={`liquid-glass rounded-2xl px-5 py-3 flex items-center justify-between transition-all duration-500 ${
+          className={`nav-shell rounded-2xl px-5 py-3 flex items-center justify-between transition-all duration-500 ${
             scrolled ? 'shadow-[0_8px_40px_hsl(227_70%_68%/0.12)]' : ''
           }`}
-          style={{ overflow: 'visible' }}
         >
           {/* Logo */}
           <Link to="/" className="flex items-center gap-2.5 group" onClick={() => setOpen(false)}>

@@ -69,7 +69,7 @@ const NavSearch = forwardRef<NavSearchHandle, { className?: string }>(function N
 
   return (
     <div ref={wrapRef} className={`relative ${className ?? ''}`}>
-      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground pointer-events-none" />
+      <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-foreground/70 pointer-events-none" />
       <input
         ref={inputRef}
         value={query}
@@ -81,7 +81,7 @@ const NavSearch = forwardRef<NavSearchHandle, { className?: string }>(function N
         }}
         placeholder="Search commands…"
         aria-label="Search commands"
-        className="w-full liquid-glass border-0 outline-none h-9 pl-9 pr-9 rounded-full text-sm bg-white/[0.04] placeholder:text-muted-foreground/70 focus:ring-2 focus:ring-primary/50 focus:bg-white/[0.07] transition-all"
+        className="w-full liquid-glass nav-search-glass border-0 outline-none h-9 pl-9 pr-9 rounded-full text-sm focus:ring-2 focus:ring-primary/50 transition-all"
         style={{ boxShadow: '0 0 0 1px hsl(var(--border) / 0.4), 0 0 18px hsl(var(--primary) / 0.08)' }}
       />
       <AnimatePresence>
@@ -92,7 +92,7 @@ const NavSearch = forwardRef<NavSearchHandle, { className?: string }>(function N
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.9 }}
             transition={{ duration: 0.15 }}
-            className="absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground/70 pointer-events-none"
+            className="absolute right-2 top-1/2 -translate-y-1/2 text-foreground/60 pointer-events-none"
             aria-hidden="true"
           >
             <CornerDownLeft className="h-3.5 w-3.5" />

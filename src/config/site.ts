@@ -21,12 +21,35 @@ import { developerConfig } from "./developer";
 
 export { botConfig, developerConfig };
 
+// Prefix-only roleplay commands are generated from the shared action registry
+// in the bot. Keep their public catalog together so the website documents the
+// complete family without duplicating 58 identical metadata blocks.
+const roleplayCommandNames = [
+  "airkiss", "angry", "angrystare", "bite", "blush", "brofist",
+  "celebrate", "cheers", "comfy", "cool", "cry", "cuddle", "dance",
+  "drool", "evilaugh", "headband", "hug", "huh", "kiss", "lick", "love",
+  "mad", "nervous", "nom", "nosebleed", "nyah", "pat", "peek", "pinch",
+  "poke", "pout", "punch", "rkick", "roll", "run", "sad", "scared",
+  "shout", "shy", "sigh", "sing", "slap", "sleep", "slowclap", "smile",
+  "sneeze", "sorry", "stop", "surprised", "sweat", "thumbsup", "tickle",
+  "tired", "wave", "wink", "woah", "yawn", "yay",
+] as const;
+
+const roleplayCommands = roleplayCommandNames.map((name) => ({
+  name: `$${name}`,
+  aliases: [] as string[],
+  permission: null,
+  description: `Use the ${name} roleplay GIF.`,
+  usage: `$${name} [user] [user2]`,
+  slash: false,
+}));
+
 export const site = {
   // `bot.commandCount` is overwritten below with the real, auto-counted
   // total from `commandCategories` so it can never drift out of sync.
   bot: botConfig,
   // Update this whenever any website source or public-facing website content changes.
-  lastUpdated: "Monday, August 10, '26 at 8:15 PM IST (UTC+05:30)",
+  lastUpdated: "Tuesday, August 11, '26 at 3:15 PM IST (UTC+05:30)",
 
   nav: [
     { label: "Home", href: "/" },
@@ -71,6 +94,12 @@ export const site = {
       title: "Fun Commands",
       description:
         "Ship compatibility, rating commands (howgay, howcute, howrizz, howsimp, howintelligent, howautistic), wanted posters, who-would-win, tic-tac-toe, rock-paper-scissors PvP, DuckDuckGo image search, and more.",
+    },
+    {
+      icon: Sparkles,
+      title: "Roleplay GIFs",
+      description:
+        "A 58-command prefix-only reaction library for expressive GIF actions such as hug, kiss, cuddle, dance, rkick, wave, and more.",
     },
     {
       icon: Users,
@@ -286,6 +315,31 @@ export const site = {
           description:
             "Kick all members matching criteria (with confirmation).",
           usage: "$masskick [filter]",
+        },
+        {
+          name: "$softban",
+          aliases: [],
+          permission: "Ban Members",
+          description:
+            "Ban then unban a member from the server.",
+          usage:
+            "$softban <@user|ID|username> [history] [reason]\nHistory: none · 1h · 6h · 12h · 1d · 3d · 7d (default: 7d).",
+        },
+        {
+          name: "$jail",
+          aliases: [],
+          permission: null,
+          description:
+            "Configure jail, list jailed members, or view jail access rules.",
+          usage:
+            "$jail setup [#allowed-channel]\n$jail remove\n$jail list\n$jail status\n$jail commands\n$jail <@user|ID|username> [reason]",
+        },
+        {
+          name: "$unjail",
+          aliases: [],
+          permission: "Manage Roles",
+          description: "Remove the configured Jailed role from a member.",
+          usage: "$unjail <@user|ID|username> [reason]",
         },
         {
           name: "$roleall",
@@ -986,6 +1040,14 @@ export const site = {
             "$alias create <name> <command>\n$alias list\n$alias delete <name>",
         },
         {
+          name: "$invoke",
+          aliases: [],
+          permission: null,
+          description: "Set personal responses for supported moderation commands.",
+          usage:
+            "$invoke set <command> <message>\n$invoke remove <command>\n$invoke list",
+        },
+        {
           name: "$greet",
           aliases: ["welcomer", "welcome"],
           permission: "Manage Server",
@@ -1465,6 +1527,20 @@ export const site = {
           usage: "$rps [@user]",
         },
         {
+          name: "$iphone-alert",
+          aliases: [],
+          permission: null,
+          description: "Generate an iPhone Presidential Alert image from text.",
+          usage: "$iphone-alert <text>",
+        },
+        {
+          name: "$car",
+          aliases: [],
+          permission: null,
+          description: "Show a random car image.",
+          usage: "$car",
+        },
+        {
           name: "$guessthenumber",
           aliases: ["gtn"],
           permission: null,
@@ -1479,7 +1555,19 @@ export const site = {
             "Search for an image using DuckDuckGo (safe search enforced).",
           usage: "$image <query>",
         },
+        {
+          name: "$periodic-table",
+          aliases: ["element", "ptable", "periodictable"],
+          permission: null,
+          description: "Look up an element from the periodic table.",
+          usage: "$periodic-table <element name|symbol|atomic number>",
+        },
       ],
+    },
+    {
+      name: "Roleplay",
+      icon: Heart,
+      commands: roleplayCommands,
     },
   ] as const,
 

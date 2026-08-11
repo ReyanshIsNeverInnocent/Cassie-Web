@@ -26,5 +26,5 @@ export const botConfig = {
    githubUrl: "https://github.com/RXS-reyansh/Levitate",
 
    /* ── Avatar (set to a URL or relative path; leave '' for the default fallback) ── */
-   botAvatar: "https://i.ibb.co/VWgwtSgc/bot-avatar-duh.jpg", // e.g. 'https://cdn.discordapp.com/avatars/.../avatar.png'
+   botAvatar: "https://i.ibb.co/S76nv0n3/bot-avatar-duh-square-cropped.jpg", // e.g. 'https://cdn.discordapp.com/avatars/.../avatar.png'
 };
