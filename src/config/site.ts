@@ -49,7 +49,7 @@ export const site = {
   // total from `commandCategories` so it can never drift out of sync.
   bot: botConfig,
   // Update this whenever any website source or public-facing website content changes.
-  lastUpdated: "Tuesday, August 11, '26 at 3:15 PM IST (UTC+05:30)",
+  lastUpdated: "Monday, August 17, '26 at 08:58 AM (IST, UTC+05:30)",
 
   nav: [
     { label: "Home", href: "/" },
@@ -156,6 +156,14 @@ export const site = {
           usage: "$uptime",
         },
         {
+          name: "$commandcount",
+          aliases: ["cc"],
+          permission: null,
+          description: "Shows the number of commands in the bot.",
+          usage: "$commandcount",
+          slash: false,
+        },
+        {
           name: "$invite",
           aliases: ["addbot", "botinvite", "inv"],
           permission: null,
@@ -185,6 +193,42 @@ export const site = {
           description:
             "Shows where the bot is hosted and other technical details.",
           usage: "$host",
+        },
+      ],
+    },
+    {
+      name: "Socials",
+      icon: Users,
+      commands: [
+        {
+          name: "$cinema",
+          aliases: ["movie", "movies", "tvshow", "tv", "series", "show"],
+          permission: null,
+          description:
+            "Search TMDB for a movie or TV show and show its dates, status, TMDB rating, US certification, genres, cast, synopsis, and links.",
+          usage: "$cinema <movie or TV show>",
+        },
+        {
+          name: "$github",
+          aliases: ["gh"],
+          permission: null,
+          description: "Show a GitHub profile and recent repositories in a colour-accented CV2 panel.",
+          usage: "$github <username>",
+        },
+        {
+          name: "$image",
+          aliases: ["img", "imagesearch"],
+          permission: null,
+          description:
+            "Search for an image using DuckDuckGo (safe search enforced).",
+          usage: "$image <query>",
+        },
+        {
+          name: "$periodic-table",
+          aliases: ["element", "ptable", "periodictable"],
+          permission: null,
+          description: "Look up an element from the periodic table.",
+          usage: "$periodic-table <element name|symbol|atomic number>",
         },
       ],
     },
@@ -827,6 +871,16 @@ export const site = {
           description: "Move a member to a different voice channel.",
           usage: "$shift <@user> <#channel>",
         },
+        {
+          name: "$voicemaster",
+          aliases: ["vm"],
+          permission: "Administrator",
+          description:
+            "Set up or manage temporary personal voice channels with a persistent control panel.",
+          usage:
+            "$voicemaster setup [text-channel]\n$voicemaster status\n$voicemaster reset",
+          slash: false,
+        },
       ],
     },
     {
@@ -844,8 +898,8 @@ export const site = {
           name: "$add",
           aliases: [],
           permission: null,
-          description: "Add a song to the queue.",
-          usage: "$add <song name or URL>",
+          description: "Add a song to the queue, including JioSaavn searches with the jssearch: prefix.",
+          usage: "$add <song name, URL, or jssearch:query>",
         },
         {
           name: "$clear",
@@ -900,8 +954,8 @@ export const site = {
           name: "$play",
           aliases: ["p"],
           permission: null,
-          description: "Play a song or add it to the queue.",
-          usage: "$play <song name or URL>",
+          description: "Play a song or add it to the queue, including JioSaavn searches with the jssearch: prefix.",
+          usage: "$play <song name, URL, or jssearch:query>",
         },
         {
           name: "$queue",
@@ -1546,21 +1600,6 @@ export const site = {
           permission: null,
           description: "Guess the number the bot is thinking of.",
           usage: "$guessthenumber",
-        },
-        {
-          name: "$image",
-          aliases: ["img", "imagesearch"],
-          permission: null,
-          description:
-            "Search for an image using DuckDuckGo (safe search enforced).",
-          usage: "$image <query>",
-        },
-        {
-          name: "$periodic-table",
-          aliases: ["element", "ptable", "periodictable"],
-          permission: null,
-          description: "Look up an element from the periodic table.",
-          usage: "$periodic-table <element name|symbol|atomic number>",
         },
       ],
     },

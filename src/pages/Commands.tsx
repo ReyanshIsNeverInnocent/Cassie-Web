@@ -13,21 +13,87 @@ type CommandEntry = {
   slash?: boolean;
 };
 
+type CatalogCategory = {
+  name: string;
+  icon: React.ElementType;
+  commands: CommandEntry[];
+};
+
 const byName = (a: CommandEntry, b: CommandEntry) => a.name.localeCompare(b.name);
 const baseCommandName = (name: string) => name.trim().split(/\s+/)[0].toLowerCase();
 const uniqueCommandCount = (commands: CommandEntry[]) =>
   new Set(commands.map((command) => baseCommandName(command.name))).size;
 
+function matchesQuery(command: CommandEntry, query: string): boolean {
+  return (
+    command.name.toLowerCase().includes(query) ||
+    command.description.toLowerCase().includes(query) ||
+    command.usage.toLowerCase().includes(query) ||
+    command.aliases?.some((alias) => alias.toLowerCase().includes(query)) === true
+  );
+}
+
+function CommandCard({
+  command,
+  category,
+}: {
+  command: CommandEntry;
+  category?: string;
+}) {
+  return (
+    <div className="liquid-glass rounded-2xl p-5 hover:scale-[1.015] transition-transform">
+      <div className="flex items-start justify-between gap-3">
+        <code
+          className="font-mono text-sm font-semibold"
+          style={{
+            background:           'var(--gradient-text)',
+            WebkitBackgroundClip: 'text',
+            WebkitTextFillColor:  'transparent',
+            backgroundClip:       'text',
+          }}
+        >
+          {command.name}
+        </code>
+        {category && (
+          <span className="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full bg-primary/12 text-primary border border-primary/20 font-semibold flex-shrink-0">
+            {category}
+          </span>
+        )}
+      </div>
+      <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{command.description}</p>
+      {(command.aliases?.length || command.permission || command.slash === false) && (
+        <div className="mt-2 flex flex-wrap items-center gap-1.5">
+          {command.aliases?.map((alias) => (
+            <code
+              key={alias}
+              className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground border border-border/60"
+            >
+              {alias}
+            </code>
+          ))}
+          {command.permission && (
+            <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-500 border border-amber-500/20">
+              <ShieldCheck className="h-2.5 w-2.5" />
+              {command.permission}
+            </span>
+          )}
+          {command.slash === false && (
+            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-sky-500/10 text-sky-500 border border-sky-500/20">
+              Prefix only
+            </span>
+          )}
+        </div>
+      )}
+      <div className="mt-3 cmd-usage">{command.usage}</div>
+    </div>
+  );
+}
+
 export default function Commands() {
-  const categories = site.commandCategories as unknown as Array<{
-    name: string;
-    icon: React.ElementType;
-    commands: CommandEntry[];
-  }>;
+  const categories = site.commandCategories as unknown as CatalogCategory[];
 
   const [searchParams, setSearchParams] = useSearchParams();
-  const [query,  setQuery]  = useState(searchParams.get('q') ?? '');
-  const [active, setActive] = useState(categories[0].name);
+  const [query, setQuery] = useState(searchParams.get('q') ?? '');
 
   useEffect(() => { document.title = `Commands | Levitate`; }, []);
 
@@ -42,34 +108,13 @@ export default function Commands() {
     setSearchParams(value ? { q: value } : {}, { replace: true });
   };
 
-  const category = categories.find((c) => c.name === active)!;
-
-  const filtered = useMemo(() => {
-    const q = query.trim().toLowerCase();
-    const list = !q
-      ? category.commands
-      : category.commands.filter(
-          (c) =>
-            c.name.toLowerCase().includes(q) ||
-            c.description.toLowerCase().includes(q) ||
-            c.usage.toLowerCase().includes(q) ||
-            c.aliases?.some((a) => a.toLowerCase().includes(q)),
-        );
-    return [...list].sort(byName);
-  }, [query, category]);
-
   const allFiltered = useMemo(() => {
     const q = query.trim().toLowerCase();
     if (!q) return null;
     return categories
       .flatMap((cat) =>
         cat.commands
-          .filter(
-            (c) =>
-              c.name.toLowerCase().includes(q) ||
-              c.description.toLowerCase().includes(q) ||
-              c.aliases?.some((a) => a.toLowerCase().includes(q)),
-          )
+          .filter((command) => matchesQuery(command, q))
           .map((c) => ({ ...c, category: cat.name })),
       )
       .sort(byName);
@@ -129,38 +174,26 @@ export default function Commands() {
         )}
       </motion.div>
 
-      {/* Category pills (hidden while global search is active) */}
+      {/* Lightweight category index. Every category remains visible below. */}
       {!query && (
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          className="mt-8 flex flex-wrap justify-center gap-2"
+          className="mt-8 flex flex-wrap justify-center gap-x-5 gap-y-2 text-sm"
         >
-          {categories.map((c) => {
-            const isActive = active === c.name;
-            return (
-              <button
-                key={c.name}
-                onClick={() => setActive(c.name)}
-                className={`relative flex items-center gap-2 px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-300 ${
-                  isActive
-                    ? 'text-white shadow-[var(--shadow-glow)] scale-[1.04]'
-                    : 'liquid-glass text-foreground hover:scale-[1.03]'
-                }`}
-                style={isActive ? { background: 'var(--gradient-aurora)', backgroundSize: '300% 300%' } : {}}
-              >
-                <c.icon className="h-3.5 w-3.5" />
-                {c.name}
-                <span
-                  className={`text-[10px] rounded-full px-1.5 py-0.5 font-semibold ${
-                    isActive ? 'bg-white/20 text-white' : 'bg-muted text-muted-foreground'
-                  }`}
-                >
-                  {uniqueCommandCount(c.commands)}
-                </span>
-              </button>
-            );
-          })}
+          {categories.map((category) => (
+            <a
+              key={category.name}
+              href={`#${category.name.toLowerCase().replace(/\s+/g, '-')}`}
+              className="inline-flex items-center gap-1.5 text-muted-foreground hover:text-primary transition-colors"
+            >
+              <category.icon className="h-3.5 w-3.5" />
+              {category.name}
+              <span className="text-[10px] text-primary/80">
+                {uniqueCommandCount(category.commands)}
+              </span>
+            </a>
+          ))}
         </motion.div>
       )}
 
@@ -232,70 +265,36 @@ export default function Commands() {
             )}
           </motion.div>
         ) : (
-          /* Category view */
-          <motion.div
-            key={active}
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -8 }}
-            transition={{ duration: 0.3 }}
-            className="mt-10 grid sm:grid-cols-2 gap-4"
-          >
-            {filtered.length === 0 ? (
-              <div className="col-span-full text-center text-muted-foreground py-20">
-                No commands match your search.
-              </div>
-            ) : (
-              filtered.map((cmd, i) => (
-                <motion.div
-                  key={cmd.name}
-                  initial={{ opacity: 0, y: 16 }}
-                  animate={{ opacity: 1,  y: 0 }}
-                  transition={{ delay: i * 0.04 }}
-                  className="liquid-glass rounded-2xl p-5 hover:scale-[1.015] transition-transform group cursor-default"
-                >
-                  <div className="flex items-start justify-between gap-3">
-                    <code
-                      className="font-mono text-sm font-semibold"
-                      style={{
-                        background:           'var(--gradient-text)',
-                        WebkitBackgroundClip: 'text',
-                        WebkitTextFillColor:  'transparent',
-                        backgroundClip:       'text',
-                      }}
-                    >
-                      {cmd.name}
-                    </code>
-                    <span className="text-[10px] uppercase tracking-wide px-2 py-0.5 rounded-full bg-primary/12 text-primary border border-primary/20 font-semibold opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                      {active}
-                    </span>
+          /* All categories and all commands */
+          <div className="mt-10 space-y-16">
+            {categories.map((category) => (
+              <section
+                key={category.name}
+                id={category.name.toLowerCase().replace(/\s+/g, '-')}
+                className="scroll-mt-28"
+              >
+                <div className="flex items-end justify-between gap-4 px-1">
+                  <div className="flex items-center gap-3">
+                    <category.icon className="h-5 w-5 text-primary" />
+                    <h2 className="font-display font-bold text-2xl sm:text-3xl">
+                      {category.name}
+                    </h2>
                   </div>
-                  <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{cmd.description}</p>
-                  {(cmd.aliases?.length || cmd.permission) && (
-                    <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                      {cmd.aliases?.map((a) => (
-                        <code key={a} className="text-[10px] font-mono px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground border border-border/60">
-                          {a}
-                        </code>
-                      ))}
-                      {cmd.permission && (
-                        <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-500 border border-amber-500/20">
-                          <ShieldCheck className="h-2.5 w-2.5" />
-                          {cmd.permission}
-                        </span>
-                      )}
-                      {cmd.slash === false && (
-                        <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-sky-500/10 text-sky-500 border border-sky-500/20">
-                          Prefix only
-                        </span>
-                      )}
-                    </div>
-                  )}
-                  <div className="mt-3 cmd-usage">{cmd.usage}</div>
-                </motion.div>
-              ))
-            )}
-          </motion.div>
+                  <span className="text-xs text-muted-foreground">
+                    {uniqueCommandCount(category.commands)} commands
+                  </span>
+                </div>
+                <div className="mt-5 grid sm:grid-cols-2 gap-4">
+                  {[...category.commands].sort(byName).map((command) => (
+                    <CommandCard
+                      key={`${category.name}-${command.name}`}
+                      command={command}
+                    />
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
         )}
       </AnimatePresence>
 
