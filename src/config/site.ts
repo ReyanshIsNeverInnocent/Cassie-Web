@@ -49,7 +49,7 @@ export const site = {
   // total from `commandCategories` so it can never drift out of sync.
   bot: botConfig,
   // Update this whenever any website source or public-facing website content changes.
-  lastUpdated: "Monday, August 17, '26 at 08:58 AM (IST, UTC+05:30)",
+  lastUpdated: "Saturday, August 22, '26 at 12:52 PM (IST, UTC+05:30)",
 
   nav: [
     { label: "Home", href: "/" },
@@ -216,6 +216,13 @@ export const site = {
           usage: "$github <username>",
         },
         {
+          name: "$youtube",
+          aliases: ["yt", "ytchannel"],
+          permission: null,
+          description: "Fetch and display YouTube channel details.",
+          usage: "$youtube <channel-name-or-id>",
+        },
+        {
           name: "$image",
           aliases: ["img", "imagesearch"],
           permission: null,
@@ -265,21 +272,6 @@ export const site = {
           description:
             "Unpin a message by replying to it, its ID, or a Discord link.",
           usage: "$unpin [message ID | message link]",
-        },
-        {
-          name: "$timeout",
-          aliases: [],
-          permission: "Timeout Members",
-          description: "Timeout with a duration string like 1h30m or 7d.",
-          usage: "$timeout <@user> <duration> [reason]",
-        },
-        {
-          name: "$untimeout",
-          aliases: ["removetimeout"],
-          permission: "Timeout Members",
-          description:
-            "Remove timeout. No arg = multi-select panel of timed-out members.",
-          usage: "$untimeout [@user]",
         },
         {
           name: "$unban",
@@ -665,6 +657,13 @@ export const site = {
           usage: "$host-image <attachment>\n$host-image <image URL>",
         },
         {
+          name: "$emoji",
+          aliases: [],
+          permission: "Manage Guild Expressions",
+          description: "Delete or rename custom emojis in this server.",
+          usage: "$emoji delete <emoji> <emoji> ...\n$emoji rename <emoji> <name>",
+        },
+        {
           name: "$placeholder-help",
           aliases: ["placeholders", "ph", "phhelp"],
           permission: null,
@@ -679,6 +678,14 @@ export const site = {
           description:
             "Make the bot say something in the current channel. Supports \\n for newlines, custom emoji syntax, and file attachments. Also works as a reply.",
           usage: "$say <text>",
+        },
+        {
+          name: "$sayemoji",
+          aliases: ["em"],
+          permission: "Manage Messages",
+          description:
+            "Send one or more emojis as a message. Supports space-separated and no-space emoji groups.",
+          usage: "$sayemoji <name or ID>\n$sayemoji <name1>|$|<name2>\n$sayemoji <name1> <name2>",
         },
         {
           name: "$serverinfo",
@@ -704,6 +711,13 @@ export const site = {
           usage: "$userinfo [@user]",
         },
         {
+          name: "$permissions",
+          aliases: ["perms"],
+          permission: null,
+          description: "Show the permissions a user has in this server.",
+          usage: "$permissions [@user | user ID | username]",
+        },
+        {
           name: "$avatar",
           aliases: ["av", "pfp"],
           permission: null,
@@ -718,6 +732,34 @@ export const site = {
           description:
             "Show a user's banner. Prompts server vs global if they differ.",
           usage: "$banner [@user]",
+        },
+        {
+          name: "$vcinfo",
+          aliases: ["voiceinfo"],
+          permission: null,
+          description: "Show detailed information about a voice channel.",
+          usage: "$vcinfo <voice channel mention | ID | name>",
+        },
+        {
+          name: "$servericon",
+          aliases: ["sicon"],
+          permission: null,
+          description: "Show this server's icon in a CV2 image panel.",
+          usage: "$servericon",
+        },
+        {
+          name: "$serverbanner",
+          aliases: ["sbanner"],
+          permission: null,
+          description: "Show this server's banner in a CV2 image panel.",
+          usage: "$serverbanner",
+        },
+        {
+          name: "$serversplash",
+          aliases: ["ssplash"],
+          permission: null,
+          description: "Show this server's invite splash image in a CV2 image panel.",
+          usage: "$serversplash",
         },
       ],
     },
@@ -755,6 +797,13 @@ export const site = {
             "Toggle your own noprefix access on or off. Only works if a developer has granted you noprefix access.",
           usage: "$mynop\n$mynop on\n$mynop off",
         },
+        {
+          name: "$autonick",
+          aliases: ["automaticnick"],
+          permission: "Manage Server",
+          description: "Configure text prepended or appended to new members and bots.",
+          usage: "$autonick [member | bot] prepend <text>\n$autonick [member | bot] append <text>\n$autonick reset [member | bot | all] [prepend | append | all]\n$autonick status",
+        },
       ],
     },
     {
@@ -770,12 +819,26 @@ export const site = {
           usage: "$archive [amount]",
         },
         {
+          name: "$accountage",
+          aliases: ["age"],
+          permission: null,
+          description: "Show how long a Discord account has existed.",
+          usage: "$accountage [@user | user ID | username]",
+        },
+        {
           name: "$enlarge",
           aliases: ["jumbo", "big"],
           permission: null,
           description:
             "Show a custom emoji as a full-size image. Accepts emoji markdown, a raw ID, or an emoji name.",
           usage: "$enlarge <emoji | emoji ID | :name:>",
+        },
+        {
+          name: "$emojizip",
+          aliases: ["emojiexport"],
+          permission: null,
+          description: "Export this server's custom emojis as a ZIP file.",
+          usage: "$emojizip",
         },
         {
           name: "$firstmessage",
@@ -837,11 +900,25 @@ export const site = {
           usage: "$mute <@user>",
         },
         {
+          name: "$vcmute",
+          aliases: [],
+          permission: "Mute Members",
+          description: "Server-mute a member in voice. Defaults to yourself.",
+          usage: "$vcmute [@user]",
+        },
+        {
           name: "$unmute",
           aliases: [],
           permission: "Mute Members",
           description: "Remove server-mute from a member.",
           usage: "$unmute <@user>",
+        },
+        {
+          name: "$vcunmute",
+          aliases: [],
+          permission: "Mute Members",
+          description: "Remove server-mute from a member in voice. Defaults to yourself.",
+          usage: "$vcunmute [@user]",
         },
         {
           name: "$deafen",
@@ -893,6 +970,14 @@ export const site = {
           permission: null,
           description: "Manage 24/7 mode and keep the bot connected to voice.",
           usage: "$24/7 <enable [channel] | disable | view>",
+        },
+        {
+          name: "/247",
+          aliases: [],
+          permission: null,
+          description: "Manage 24/7 mode and keep the bot connected to voice.",
+          usage: "/247 <enable [channel] | disable | view>",
+          slash: true,
         },
         {
           name: "$add",
@@ -1037,6 +1122,13 @@ export const site = {
           description: "Set or view playback volume.",
           usage: "$volume [1-100]",
         },
+        {
+          name: "$song-cover",
+          aliases: ["cover", "songcover", "coverart"],
+          permission: null,
+          description: "Search iTunes for a song and show its cover art.",
+          usage: "$song-cover <song name or \"Song Name - Artist Name\">",
+        },
       ],
     },
     {
@@ -1084,6 +1176,13 @@ export const site = {
             "Manage sticky messages: re-posted at the bottom on every new message.",
           usage:
             "$sticky set text <content>\n$sticky enable\n$sticky disable\n$sticky view",
+        },
+        {
+          name: "$honeypot",
+          aliases: ["trap"],
+          permission: "Manage Server",
+          description: "Configure a honeypot channel that moderates anyone who posts in it.",
+          usage: "$honeypot setup",
         },
         {
           name: "$alias",
