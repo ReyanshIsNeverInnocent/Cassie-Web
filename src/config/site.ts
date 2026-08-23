@@ -49,7 +49,7 @@ export const site = {
   // total from `commandCategories` so it can never drift out of sync.
   bot: botConfig,
   // Update this whenever any website source or public-facing website content changes.
-  lastUpdated: "Saturday, August 22, '26 at 12:52 PM (IST, UTC+05:30)",
+  lastUpdated: "Sunday, August 23, '26 at 08:54 PM (IST, UTC+05:30)",
 
   nav: [
     { label: "Home", href: "/" },
@@ -279,6 +279,13 @@ export const site = {
           permission: "Ban Members",
           description: "Unban by ID. No ID = dropdown of all current bans.",
           usage: "$unban [user ID]",
+        },
+        {
+          name: "$unbanall",
+          aliases: ["unban-all"],
+          permission: "Ban Members",
+          description: "Unban every banned user from this server after confirmation.",
+          usage: "$unbanall",
         },
         {
           name: "$hackban",
@@ -592,6 +599,13 @@ export const site = {
           description:
             "Delete all messages in the channel up to a specific message ID.",
           usage: "$purge-till <message ID>",
+        },
+        {
+          name: "$remind",
+          aliases: ["remindme"],
+          permission: null,
+          description: "Create and manage personal reminders.",
+          usage: "$remind <duration> <reason>\n$remind list\n$remind delete <number>",
         },
         {
           name: "$snipe",
