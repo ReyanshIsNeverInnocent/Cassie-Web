@@ -635,8 +635,22 @@ export const site = {
           aliases: ["ls"],
           permission: null,
           description:
-            "Paginated list of roles, members, bots, emojis, stickers, channels, or bans.",
-          usage: "$list roles|members|bots|emojis|channels|bans",
+            "Paginated list of roles, members, bots, emojis, stickers, channels, bans, or invites.",
+          usage: "$list <type>",
+        },
+        {
+          name: "$inrole",
+          aliases: [],
+          permission: null,
+          description: "List members who have a role by mention, ID, or name.",
+          usage: "$inrole <@role | role ID | role name>",
+        },
+        {
+          name: "$userroles",
+          aliases: [],
+          permission: null,
+          description: "List the roles assigned to a user.",
+          usage: "$userroles [@user | user ID | username]",
         },
         {
           name: "$roleinfo",
@@ -728,8 +742,9 @@ export const site = {
           name: "$permissions",
           aliases: ["perms"],
           permission: null,
-          description: "Show the permissions a user has in this server.",
-          usage: "$permissions [@user | user ID | username]",
+          description: "Show the permissions a user or role has in this server.",
+          usage:
+            "$permissions [@user | user ID | username | @role | role ID | role name]",
         },
         {
           name: "$avatar",
@@ -1597,7 +1612,7 @@ export const site = {
         },
         {
           name: "$setname",
-          aliases: [],
+          aliases: ["setnick"],
           permission: "Administrator",
           description: "Change the bot's username.",
           usage: "$setname <name>",
