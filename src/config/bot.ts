@@ -21,7 +21,7 @@ export const botConfig = {
 
    /* ── Links ────────────────────────────────────────────── */
    inviteUrl:
-      "https://discord.com/oauth2/authorize?client_id=1520367176756891688",
+      "https://discord.com/oauth2/authorize?client_id=956120503523889172",
    supportUrl: "https://discord.gg/YpCfcCTXdv",
    githubUrl: "https://github.com/RXS-reyansh/Cassie",
 
