@@ -13,7 +13,7 @@ function escapeHtmlAttribute(value: string): string {
 
 function seoMetadataPlugin() {
   return {
-    name: 'levitate-seo-metadata',
+    name: 'cassie-seo-metadata',
     transformIndexHtml(html: string) {
       const replacements: Record<string, string> = {
         SEO_TITLE: seoConfig.title,

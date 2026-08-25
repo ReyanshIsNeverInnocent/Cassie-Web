@@ -15,7 +15,7 @@ export default function handler(req, res) {
     return res.status(405).end();
   }
 
-  const baseUrl = 'https://levitate-web.vercel.app';
+  const baseUrl = 'https://cassie-web.vercel.app';
   const urls = routes
     .map((route) => `    <url><loc>${escapeXml(`${baseUrl}${route}`)}</loc></url>`)
     .join('\n');

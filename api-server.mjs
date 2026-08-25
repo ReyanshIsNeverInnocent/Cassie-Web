@@ -1,4 +1,4 @@
-// Levitate-Web/api-server.mjs
+// Cassie-Web/api-server.mjs
 // Stats API — serves GET /api/stats (one-shot) and GET /api/stats/stream (SSE).
 // The SSE endpoint uses a MongoDB change stream so clients receive updates the
 // instant the bot writes new data — no client-side polling needed.
@@ -9,7 +9,7 @@ import { MongoClient }  from 'mongodb';
 const PORT      = Number(process.env.STATS_API_PORT ?? 3001);
 const MONGO_URI = process.env.MONGO_URI;
 const BOT_ID    = process.env.BOT_IDENTIFIER ?? '';
-const DB_NAME   = 'LevitateDiscordBot';
+const DB_NAME   = 'CassieDiscordBot';
 
 if (!MONGO_URI) {
   console.error('[API SERVER] MONGO_URI is not set — exiting.');

@@ -345,7 +345,7 @@ function Hero() {
           {/* Headline */}
           <h1 className="mt-6 font-display font-extrabold text-[2.1rem] sm:text-5xl md:text-6xl lg:text-[5rem] leading-[1.1] sm:leading-[1.02] tracking-tight">
             Meet{' '}
-            <GradientReveal text="Levitate" delay={0.25} />
+            <GradientReveal text="Cassie" delay={0.25} />
           </h1>
 
           <motion.p
@@ -734,7 +734,7 @@ function Cta() {
           viewport={{ once: true }}
           className="relative font-display font-extrabold text-4xl md:text-5xl text-white tracking-tight leading-tight"
         >
-          Want Levitate on<br className="hidden sm:block" /> your server?
+          Want Cassie on<br className="hidden sm:block" /> your server?
         </motion.h2>
         <motion.p
           initial={{ opacity: 0 }}
@@ -743,7 +743,7 @@ function Cta() {
           transition={{ delay: 0.15 }}
           className="relative mt-4 text-white/75 max-w-md mx-auto text-base"
         >
-          Add Levitate in seconds. No setup needed. Protection and utility start working the moment you add it.
+          Add Cassie in seconds. No setup needed. Protection and utility start working the moment you add it.
         </motion.p>
         <motion.div
           initial={{ opacity: 0, y: 16 }}
@@ -778,7 +778,7 @@ function Cta() {
    Page
 ───────────────────────────────────────────────────────────────────────────── */
 export default function Home() {
-  useEffect(() => { document.title = `Levitate | ${site.bot.tagline}`; }, []);
+  useEffect(() => { document.title = `Cassie | ${site.bot.tagline}`; }, []);
   return (
     <>
       <Hero />

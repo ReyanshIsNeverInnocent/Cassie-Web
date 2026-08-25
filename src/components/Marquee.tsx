@@ -22,7 +22,7 @@ export default function Marquee() {
     <div
       className="relative w-full overflow-hidden py-6 border-y border-border/40 marquee-mask"
       role="marquee"
-      aria-label="Levitate highlights"
+      aria-label="Cassie highlights"
     >
       <div
         className="flex w-max animate-marquee hover:[animation-play-state:paused]"

@@ -95,7 +95,7 @@ export default function Commands() {
   const [searchParams, setSearchParams] = useSearchParams();
   const [query, setQuery] = useState(searchParams.get('q') ?? '');
 
-  useEffect(() => { document.title = `Commands | Levitate`; }, []);
+  useEffect(() => { document.title = `Commands | Cassie`; }, []);
 
   // Pick up ?q= from the navbar search (or any deep link) whenever it changes.
   useEffect(() => {

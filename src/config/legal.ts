@@ -13,11 +13,11 @@ export const legalConfig = {
 
   privacyPolicy: {
     title:   'Privacy Policy',
-    summary: 'This Privacy Policy explains what information Levitate ("the Bot", "we", "us") collects when you use the Bot on Discord or visit this website, why we collect it, and how you can control it.',
+    summary: 'This Privacy Policy explains what information Cassie ("the Bot", "we", "us") collects when you use the Bot on Discord or visit this website, why we collect it, and how you can control it.',
     sections: [
       {
         heading: '1. Information We Collect',
-        intro:   'Levitate is a Discord bot, and the information it processes comes almost entirely from Discord\'s own platform and the servers you add it to. We collect and store only what is needed to provide the features you and your server enable.',
+        intro:   'Cassie is a Discord bot, and the information it processes comes almost entirely from Discord\'s own platform and the servers you add it to. We collect and store only what is needed to provide the features you and your server enable.',
         clauses: [
           'Discord identifiers: user IDs, server (guild) IDs, channel IDs, and role IDs, used to associate settings and data with the correct account or server.',
           'Server configuration: prefixes, log channel settings, autorole rules, sticky messages, autoresponder triggers, welcomer and birthday configuration, antinuke module settings, and similar settings you configure with commands.',
@@ -77,7 +77,7 @@ export const legalConfig = {
       {
         heading: '7. Children\'s Privacy',
         clauses: [
-          'Levitate is intended for use in accordance with Discord\'s Terms of Service, which requires users to be at least 13 years old (or the minimum age required in your country).',
+          'Cassie is intended for use in accordance with Discord\'s Terms of Service, which requires users to be at least 13 years old (or the minimum age required in your country).',
           'We do not knowingly collect data from children under the applicable minimum age. If we become aware that we have done so, we will delete the relevant data.',
         ],
       },
@@ -98,12 +98,12 @@ export const legalConfig = {
 
   termsOfService: {
     title:   'Terms of Service',
-    summary: 'These Terms of Service ("Terms") govern your access to and use of Levitate (the "Bot") and this website (the "Site"). By adding the Bot to a server, using its commands, or accessing the Site, you agree to these Terms.',
+    summary: 'These Terms of Service ("Terms") govern your access to and use of Cassie (the "Bot") and this website (the "Site"). By adding the Bot to a server, using its commands, or accessing the Site, you agree to these Terms.',
     sections: [
       {
         heading: '1. Acceptance of Terms',
         clauses: [
-          'By inviting Levitate to a Discord server, interacting with any of its commands, or using this website, you agree to be bound by these Terms and by Discord\'s own Terms of Service and Community Guidelines.',
+          'By inviting Cassie to a Discord server, interacting with any of its commands, or using this website, you agree to be bound by these Terms and by Discord\'s own Terms of Service and Community Guidelines.',
           'If you do not agree to these Terms, do not add the Bot to a server or use the Site.',
           'If you are using the Bot on behalf of a server, you represent that you have the authority to accept these Terms for that server and its members.',
         ],
@@ -118,7 +118,7 @@ export const legalConfig = {
       {
         heading: '3. Description of Service',
         clauses: [
-          'Levitate provides moderation, antinuke protection, logging, utility, welcomer, birthday, and fun/entertainment features for Discord servers, accessible via prefix commands and slash commands, all free of charge.',
+          'Cassie provides moderation, antinuke protection, logging, utility, welcomer, birthday, and fun/entertainment features for Discord servers, accessible via prefix commands and slash commands, all free of charge.',
           'Features are provided on an "as available" basis and may be added, changed, limited, or removed at any time without prior notice.',
           'The Bot is provided free of charge. There are no premium tiers, paywalls, or paid features at this time; if that changes, these Terms will be updated accordingly.',
         ],

@@ -1,13 +1,13 @@
 /**
  * ─────────────────────────────────────────────────────────────────────────────
- *  LEVITATE — Landing Page Config
+ *  CASSIE — Landing Page Config
  *  Edit this file to update any public-facing info on the site.
  * ─────────────────────────────────────────────────────────────────────────────
  */
 
 export const botConfig = {
    /* ── Identity ─────────────────────────────────────────── */
-   name: "Levitate",
+   name: "Cassie",
    prefix: "$",
    tagline: "Your server, elevated.",
    description:
@@ -23,7 +23,7 @@ export const botConfig = {
    inviteUrl:
       "https://discord.com/oauth2/authorize?client_id=1520367176756891688",
    supportUrl: "https://discord.gg/YpCfcCTXdv",
-   githubUrl: "https://github.com/RXS-reyansh/Levitate",
+   githubUrl: "https://github.com/RXS-reyansh/Cassie",
 
    /* ── Avatar (set to a URL or relative path; leave '' for the default fallback) ── */
    botAvatar: "https://i.ibb.co/S76nv0n3/bot-avatar-duh-square-cropped.jpg", // e.g. 'https://cdn.discordapp.com/avatars/.../avatar.png'

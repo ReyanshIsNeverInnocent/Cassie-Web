@@ -93,7 +93,7 @@ function Avatar({
 interface DevProfile { avatar: string | null; decoration: string | null; }
 
 export default function About() {
-  useEffect(() => { document.title = `About | Levitate`; }, []);
+  useEffect(() => { document.title = `About | Cassie`; }, []);
 
   const [devProfile, setDevProfile] = useState<DevProfile | null>(null);
 
@@ -243,7 +243,7 @@ export default function About() {
             <div className="relative px-2 pb-2.5 flex items-start justify-between">
               <div>
                 <p className="text-[10px] uppercase tracking-[0.22em] text-primary font-semibold">Built with</p>
-                <p className="mt-1 text-xs text-muted-foreground">The tools behind Levitate</p>
+                <p className="mt-1 text-xs text-muted-foreground">The tools behind Cassie</p>
               </div>
               <Code2 className="h-5 w-5 text-primary/70" />
             </div>

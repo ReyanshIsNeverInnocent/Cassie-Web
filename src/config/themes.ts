@@ -1,4 +1,4 @@
-// xoxo/Levitate-Web/src/config/themes.ts
+// xoxo/Cassie-Web/src/config/themes.ts
 // All site colour themes. The vars Record maps CSS custom-property names
 // (without the leading --) to their raw values.  Gradient / shadow vars hold
 // full CSS values; HSL base vars hold bare "H S% L%" tokens.

@@ -1740,7 +1740,7 @@ export const site = {
 
   faqs: [
     {
-      q: "Is Levitate free to use?",
+      q: "Is Cassie free to use?",
       a: "Yes, completely. All commands and features are free with no premium tiers or paywalls.",
     },
     {
@@ -1748,23 +1748,23 @@ export const site = {
       a: "The default prefix is `$`. Server admins can change it with `$setprefix`, and individual users can set a personal prefix with `$selfprefix`.",
     },
     {
-      q: "How do I add Levitate to my server?",
+      q: "How do I add Cassie to my server?",
       a: 'Click the "Add to Discord" button, authorize the bot, and you\'re ready. The bot works immediately with no setup required.',
     },
     {
-      q: "Does Levitate support slash commands?",
+      q: "Does Cassie support slash commands?",
       a: "Yes. Most commands have both a prefix variant and a slash command. Slash commands are globally registered at startup.",
     },
     {
-      q: "Does Levitate read or log my messages?",
+      q: "Does Cassie read or log my messages?",
       a: "Only if you explicitly enable the message logging category with `$log message`. The bot does not store message content by default.",
     },
     {
       q: "How does the antinuke system work?",
-      a: "Levitate watches 11 event types and tracks action counts in sliding time windows. When a threshold is crossed the actor is punished (kick, ban, strip roles, or quarantine) and the damage is reverted where possible, with no setup required.",
+      a: "Cassie watches 11 event types and tracks action counts in sliding time windows. When a threshold is crossed the actor is punished (kick, ban, strip roles, or quarantine) and the damage is reverted where possible, with no setup required.",
     },
     {
-      q: "Can I use Levitate without a prefix?",
+      q: "Can I use Cassie without a prefix?",
       a: "Noprefix access is granted by the developer to specific trusted users. You can also @mention the bot as a prefix.",
     },
     {

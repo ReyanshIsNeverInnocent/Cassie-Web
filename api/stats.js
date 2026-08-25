@@ -1,4 +1,4 @@
-// Levitate-Web/api/stats.js
+// Cassie-Web/api/stats.js
 // Vercel serverless function — reads bot stats from MongoDB.
 // Deploy alongside the website. Set MONGO_URI and BOT_IDENTIFIER in Vercel.
 // No separate server needed.
@@ -7,7 +7,7 @@ import { MongoClient } from 'mongodb';
 
 const MONGO_URI = process.env.MONGO_URI;
 const BOT_ID    = process.env.BOT_IDENTIFIER ?? '';
-const DB_NAME   = 'LevitateDiscordBot';
+const DB_NAME   = 'CassieDiscordBot';
 
 // Reuse the MongoClient across warm invocations (Vercel caches module scope).
 let _client = null;

@@ -23,7 +23,7 @@ export default function Footer() {
                     </span>
                   )}
                 </div>
-                <span className="font-display font-bold text-lg">Levitate</span>
+                <span className="font-display font-bold text-lg">Cassie</span>
               </Link>
               <p className="mt-4 text-sm text-muted-foreground leading-relaxed max-w-xs">
                 {site.bot.description}
@@ -94,7 +94,7 @@ export default function Footer() {
 
           <div className="mt-10 pt-6 border-t border-border/50 flex flex-col sm:flex-row justify-between items-center gap-3">
             <p className="text-xs text-muted-foreground">
-              © {year} Levitate · Made with care by {developerConfig.name}
+              © {year} Cassie · Made with care by {developerConfig.name}
             </p>
             <div className="flex items-center gap-4">
               <Link to="/privacy" className="text-xs text-muted-foreground hover:text-foreground transition-colors">

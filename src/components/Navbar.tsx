@@ -63,7 +63,7 @@ export default function Navbar() {
               )}
             </div>
             <span className="font-display font-bold text-[17px] tracking-tight">
-              Levitate
+              Cassie
             </span>
           </Link>
 

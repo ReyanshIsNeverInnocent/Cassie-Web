@@ -1,4 +1,4 @@
-// Levitate-Web/api/developer.js
+// Cassie-Web/api/developer.js
 // Vercel serverless function — fetches the developer's Discord profile
 // (avatar + avatar_decoration_data) and returns it to the frontend.
 // Set DISCORD_TOKEN in Vercel environment variables (same token used by the bot).

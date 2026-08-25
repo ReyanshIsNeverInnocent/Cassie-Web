@@ -4,7 +4,7 @@ import { legalConfig } from '@/config/legal';
 
 export default function PrivacyPolicy() {
   const { title, summary, sections } = legalConfig.privacyPolicy;
-  useEffect(() => { document.title = `${title} | Levitate`; }, [title]);
+  useEffect(() => { document.title = `${title} | Cassie`; }, [title]);
 
   return (
     <section className="container max-w-3xl pt-8 pb-28">
