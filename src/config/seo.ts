@@ -6,9 +6,9 @@
  * For the best Discord large preview, use a JPG/PNG around 1200x630.
  */
 export const seoConfig = {
-  title: 'CassieBot - Your server, elevated.',
-  description: 'A little more order, a little more levitation. With Cassie Bot',
-  canonicalUrl: 'https://cassie-web.vercel.app/',
+  title: 'Cassie - Your server, elevated.',
+  description: 'A little more order, a little more levitation.',
+  canonicalUrl: 'https://cassiewho.vercel.app/',
   // Replace this one value with any direct, public JPG/PNG/WebP image URL.
   imageUrl: 'https://i.ibb.co/cSqRx6W7/flowerss.jpg',
   imageAlt: 'Cassie — Discord Bot',
