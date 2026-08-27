@@ -8,7 +8,7 @@
 export const seoConfig = {
   title: 'Cassie - Your server, elevated.',
   description: 'A little more order, a little more levitation.',
-  canonicalUrl: 'https://cassiewho.vercel.app/',
+  canonicalUrl: 'https://cassie-web.vercel.app/',
   // Replace this one value with any direct, public JPG/PNG/WebP image URL.
   imageUrl: 'https://i.ibb.co/cSqRx6W7/flowerss.jpg',
   imageAlt: 'Cassie — Discord Bot',
