@@ -692,6 +692,15 @@ export const site = {
           usage: "$emoji delete <emoji> <emoji> ...\n$emoji rename <emoji> <name>",
         },
         {
+          name: "$steal",
+          aliases: [],
+          permission: "Manage Guild Expressions",
+          description:
+            "Steal one or more custom emojis or image files into this server as emojis or stickers.",
+          usage:
+            "$steal <emoji | emoji ID | emoji markdown | emoji name> ...\n$steal <image URL> ...\nReply to a message containing emojis or image files, then use $steal",
+        },
+        {
           name: "$placeholder-help",
           aliases: ["placeholders", "ph", "phhelp"],
           permission: null,
@@ -819,12 +828,21 @@ export const site = {
           usage: "$selfprefix <prefix>\n$selfprefix view\n$selfprefix remove",
         },
         {
-          name: "$mynop",
-          aliases: ["mynoprefix"],
+          name: "$noprefix",
+          aliases: ["nop", "mynop", "mynoprefix"],
           permission: null,
           description:
             "Toggle your own noprefix access on or off. Only works if a developer has granted you noprefix access.",
-          usage: "$mynop\n$mynop on\n$mynop off",
+          usage: "$noprefix\n$noprefix on\n$noprefix off\n$noprefix status\n$noprefix server enable\n$noprefix server disable",
+        },
+        {
+          name: "$glnoprefix",
+          aliases: ["gnop"],
+          permission: "Developer",
+          description:
+            "Manage global noprefix grants and control another user's global or server-specific noprefix setting.",
+          usage:
+            "$glnoprefix add <user> [duration]\n$glnoprefix remove <user>\n$glnoprefix extend <user> <duration>\n$glnoprefix makeperm <user>\n$glnoprefix list\n$glnoprefix status <user>\n$glnoprefix user <user> enable|disable\n$glnoprefix user <user> server enable|disable\n$glnoprefix enable|disable\n$glnoprefix server enable|disable/list [server ID]",
         },
         {
           name: "$autonick",
