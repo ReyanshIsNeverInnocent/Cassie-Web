@@ -164,6 +164,13 @@ export const site = {
           slash: false,
         },
         {
+          name: "$dominant",
+          aliases: [],
+          permission: null,
+          description: "Show the dominant color and color details for a user, server, or bot.",
+          usage: "$dominant [user]\n$dominant server\n$dominant bot",
+        },
+        {
           name: "$invite",
           aliases: ["addbot", "botinvite", "inv"],
           permission: null,
@@ -331,7 +338,7 @@ export const site = {
           description:
             "Add or remove a member role directly, or open the combined role manager.",
           usage:
-            "$role add <user> [role]\n$role remove <user> [role]\n$role <user>",
+            "$role add <user> [role]\n$role remove <user> [role]\n$role all <role>\n$role all remove <role>\n$role hoist <role> [on|off]\n$role rename <role> <name>\n$role delete <role>\n$role mentionable <role> [on|off]\n$role create <name>\n$role color <role> <#hex>\n$role <user>",
         },
         {
           name: "$nick",
@@ -383,14 +390,6 @@ export const site = {
           permission: "Manage Roles",
           description: "Remove the configured Jailed role from a member.",
           usage: "$unjail <@user|ID|username> [reason]",
-        },
-        {
-          name: "$roleall",
-          aliases: ["allrole", "giveall"],
-          permission: "Manage Roles",
-          description:
-            "Give a role to all/humans/bots; a button panel lets you choose the target group.",
-          usage: "$roleall <@role>",
         },
         {
           name: "$reactionmute",
@@ -864,6 +863,14 @@ export const site = {
           description:
             "Save recent channel messages to a .txt file sent to your DMs.",
           usage: "$archive [amount]",
+        },
+        {
+          name: "$allcommands",
+          aliases: [],
+          permission: null,
+          description: "Show all commands available to the bot in alphabetical order.",
+          usage: "$allcommands",
+          slash: false,
         },
         {
           name: "$accountage",
@@ -1727,11 +1734,18 @@ export const site = {
           usage: "$rps [@user]",
         },
         {
-          name: "$iphone-alert",
-          aliases: [],
+          name: "$presidential-alert",
+          aliases: ["pre-alert", "funalert", "fun-alert"],
           permission: null,
           description: "Generate an iPhone Presidential Alert image from text.",
-          usage: "$iphone-alert <text>",
+          usage: "$presidential-alert <text>",
+        },
+        {
+          name: "$achievement",
+          aliases: [],
+          permission: null,
+          description: "Generate a Minecraft-style achievement image from text.",
+          usage: "$achievement <text>",
         },
         {
           name: "$car",
