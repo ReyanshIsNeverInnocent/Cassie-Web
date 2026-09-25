@@ -225,17 +225,31 @@ function TiltCard({ children, className }: { children: React.ReactNode; classNam
   const ref = useRef<HTMLDivElement>(null);
   const px  = useMotionValue(0.5);
   const py  = useMotionValue(0.5);
-  const rx  = useTransform(py, [0, 1], [9,  -9]);
-  const ry  = useTransform(px, [0, 1], [-9,  9]);
+  const rx  = useTransform(py, [0, 1], [6,  -6]);
+  const ry  = useTransform(px, [0, 1], [-6,  6]);
 
   const shineX = useTransform(px, [0, 1], ['0%',   '100%']);
   const shineY = useTransform(py, [0, 1], ['0%',   '100%']);
 
+  const EDGE_DEAD_ZONE = 0.08;
+
   const onMove = (e: React.MouseEvent<HTMLDivElement>) => {
     const r = ref.current?.getBoundingClientRect();
     if (!r) return;
-    px.set((e.clientX - r.left) / r.width);
-    py.set((e.clientY - r.top)  / r.height);
+
+    const x = (e.clientX - r.left) / r.width;
+    const y = (e.clientY - r.top) / r.height;
+
+    const isNearEdge = x < EDGE_DEAD_ZONE || x > 1 - EDGE_DEAD_ZONE || y < EDGE_DEAD_ZONE || y > 1 - EDGE_DEAD_ZONE;
+
+    if (isNearEdge) {
+      px.set(0.5);
+      py.set(0.5);
+      return;
+    }
+
+    px.set(x);
+    py.set(y);
   };
   const onLeave = () => { px.set(0.5); py.set(0.5); };
 

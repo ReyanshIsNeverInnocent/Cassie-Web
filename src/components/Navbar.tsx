@@ -21,6 +21,7 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handler);
   }, []);
 
+
   // On the homepage, pressing Enter (outside any input) jumps straight to
   // the command search — no need to hunt for it or open /commands first.
   useEffect(() => {
@@ -104,7 +105,7 @@ export default function Navbar() {
               href={site.bot.inviteUrl}
               target="_blank"
               rel="noreferrer"
-              className="hidden sm:flex items-center gap-1.5 bg-aurora animate-aurora text-white text-sm font-semibold px-5 py-2 rounded-full shadow-[var(--shadow-glow)] hover:opacity-90 transition-opacity"
+              className="hidden sm:flex h-10 items-center justify-center gap-1.5 bg-aurora animate-aurora text-white text-sm font-semibold px-5 rounded-full shadow-[var(--shadow-glow)] hover:opacity-90 transition-opacity"
             >
               Invite
               <ExternalLink className="h-3.5 w-3.5" />

@@ -9,6 +9,7 @@ import TwinkleStars from './TwinkleStars';
 import FloatingEmojis from './FloatingEmojis';
 import AnnouncementBadge from './AnnouncementBadge';
 import CursorTrail from './CursorTrail';
+import BackgroundMiniPlayer from './BackgroundMiniPlayer';
 
 function CursorGlow() {
   const rawX = useMotionValue(-300);
@@ -71,6 +72,7 @@ export default function Layout() {
       <div className="relative z-10">
         <Marquee />
       </div>
+      <BackgroundMiniPlayer />
       <Footer />
     </div>
   );

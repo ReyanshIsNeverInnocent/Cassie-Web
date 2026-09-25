@@ -17,8 +17,9 @@ export const announcements = {
     'No bitches?',
     'The eyes never lie.',
     '🗣️ CALL OUT MY NAME!',
-    'Kiss me hard before you go 💗',
     '666',
     'No shit sherlock.',
+    'God is a man. Duh what?',
+    'And I know there\'s a blade where your heart is.',
   ],
 };

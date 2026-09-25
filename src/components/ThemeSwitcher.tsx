@@ -80,7 +80,7 @@ export default function ThemeSwitcher() {
       {/* Trigger — flat rounded-square colour chip */}
       <button
         aria-label="Switch colour theme"
-        className="h-7 w-7 rounded-lg flex-shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 transition-transform duration-200 hover:scale-110 ring-1 ring-white/15 hover:ring-white/35"
+        className="h-8 w-8 rounded-full flex-shrink-0 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 transition-transform duration-200 hover:scale-110 ring-1 ring-white/15 hover:ring-white/35"
         style={{ background: active.previewGradient }}
       />
 
