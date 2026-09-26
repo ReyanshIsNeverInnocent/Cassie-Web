@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion, useMotionValue, useSpring } from 'framer-motion';
 import Navbar from './Navbar';
@@ -45,6 +45,17 @@ function CursorGlow() {
 
 export default function Layout() {
   const { pathname } = useLocation();
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' ? window.innerWidth < 640 : false);
+
+  useEffect(() => {
+    const media = window.matchMedia('(max-width: 639px)');
+    const update = (event?: MediaQueryListEvent) => setIsMobile(event ? event.matches : media.matches);
+
+    update();
+    media.addEventListener('change', update);
+    return () => media.removeEventListener('change', update);
+  }, []);
+
   useEffect(() => { window.scrollTo({ top: 0, behavior: 'instant' }); }, [pathname]);
 
   return (
@@ -52,9 +63,9 @@ export default function Layout() {
       <AuroraBackground />
       <TwinkleStars />
       <FloatingEmojis />
-      <CursorGlow />
-      <CursorTrail />
-      <AnnouncementBadge />
+      {!isMobile && <CursorGlow />}
+      {!isMobile && <CursorTrail />}
+      {!isMobile && <AnnouncementBadge />}
       <Navbar />
       <main className="flex-1 pt-24 relative z-10">
         <AnimatePresence mode="wait">
@@ -72,7 +83,7 @@ export default function Layout() {
       <div className="relative z-10">
         <Marquee />
       </div>
-      <BackgroundMiniPlayer />
+      {!isMobile && <BackgroundMiniPlayer />}
       <Footer />
     </div>
   );

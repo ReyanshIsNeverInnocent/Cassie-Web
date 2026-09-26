@@ -155,30 +155,69 @@ export default function Navbar() {
                 <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground px-1 mb-2">
                   Theme
                 </p>
-                <div className="flex flex-wrap gap-2 px-1">
-                  {themes.map((t) => (
-                    <button
-                      key={t.id}
-                      onClick={() => setTheme(t.id)}
-                      aria-label={t.name}
-                      title={t.name}
-                      className="relative h-7 w-7 rounded-full flex-shrink-0 transition-transform duration-150 active:scale-90"
-                      style={{
-                        background: t.previewGradient,
-                        boxShadow:
-                          activeTheme.id === t.id
-                            ? '0 0 0 2.5px hsl(var(--foreground) / 0.85)'
-                            : '0 0 0 1.5px hsl(var(--border) / 0.4)',
-                      }}
-                    >
-                      {activeTheme.id === t.id && (
-                        <span className="absolute inset-0 rounded-full flex items-center justify-center">
-                          <span className="h-2 w-2 rounded-full bg-white/80" />
-                        </span>
-                      )}
-                    </button>
-                  ))}
+
+                <div className="space-y-3 px-1">
+                  <div>
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">
+                      Dark
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {themes.filter((t) => t.mode === 'dark').map((t) => (
+                        <button
+                          key={t.id}
+                          onClick={() => setTheme(t.id)}
+                          aria-label={t.name}
+                          title={t.name}
+                          className="relative h-7 w-7 rounded-full flex-shrink-0 transition-transform duration-150 active:scale-90"
+                          style={{
+                            background: t.previewGradient,
+                            boxShadow:
+                              activeTheme.id === t.id
+                                ? '0 0 0 2.5px hsl(var(--foreground) / 0.85)'
+                                : '0 0 0 1.5px hsl(var(--border) / 0.4)',
+                          }}
+                        >
+                          {activeTheme.id === t.id && (
+                            <span className="absolute inset-0 rounded-full flex items-center justify-center">
+                              <span className="h-2 w-2 rounded-full bg-white/80" />
+                            </span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div>
+                    <p className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground px-1 pb-1.5">
+                      Light
+                    </p>
+                    <div className="flex flex-wrap gap-2">
+                      {themes.filter((t) => t.mode === 'light').map((t) => (
+                        <button
+                          key={t.id}
+                          onClick={() => setTheme(t.id)}
+                          aria-label={t.name}
+                          title={t.name}
+                          className="relative h-7 w-7 rounded-full flex-shrink-0 transition-transform duration-150 active:scale-90"
+                          style={{
+                            background: t.previewGradient,
+                            boxShadow:
+                              activeTheme.id === t.id
+                                ? '0 0 0 2.5px hsl(var(--foreground) / 0.85)'
+                                : '0 0 0 1.5px hsl(var(--border) / 0.4)',
+                          }}
+                        >
+                          {activeTheme.id === t.id && (
+                            <span className="absolute inset-0 rounded-full flex items-center justify-center">
+                              <span className="h-2 w-2 rounded-full bg-white/80" />
+                            </span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 </div>
+
                 <p className="text-[10px] text-muted-foreground px-1 mt-1.5">{activeTheme.name}</p>
               </div>
 
