@@ -1,28 +1,37 @@
 // Cassie-Web/api/stats.js
-// Vercel serverless function — reads bot stats from MongoDB.
-// Deploy alongside the website. Set MONGO_URI and BOT_IDENTIFIER in Vercel.
+// Vercel serverless function — reads bot stats from PostgreSQL.
+// Deploy alongside the website. Set DATABASE_URL and BOT_IDENTIFIER in Vercel.
 // No separate server needed.
 
-import { MongoClient } from 'mongodb';
+import pg from 'pg';
 
-const MONGO_URI = process.env.MONGO_URI;
-const BOT_ID    = process.env.BOT_IDENTIFIER ?? '';
-const DB_NAME   = 'CassieDiscordBot';
+const DATABASE_URL = process.env.DATABASE_URL;
+const BOT_ID = process.env.BOT_IDENTIFIER ?? '';
 
-// Reuse the MongoClient across warm invocations (Vercel caches module scope).
-let _client = null;
+// Reuse the pool across warm Vercel invocations.
+let _pool = null;
 
-async function getClient() {
-  if (_client) return _client;
-  if (!MONGO_URI) throw new Error('MONGO_URI is not set');
-  _client = new MongoClient(MONGO_URI, { tls: true, connectTimeoutMS: 10_000 });
-  await _client.connect();
-  return _client;
+function getPool() {
+  if (_pool) return _pool;
+  if (!DATABASE_URL) throw new Error('DATABASE_URL is not set');
+  _pool = new pg.Pool({
+    connectionString: DATABASE_URL,
+    max: 1,
+    connectionTimeoutMillis: 10_000,
+    query_timeout: 10_000,
+  });
+  return _pool;
 }
 
-function col(client, name) {
-  const prefixed = BOT_ID ? `${BOT_ID}_${name}` : name;
-  return client.db(DB_NAME).collection(prefixed);
+async function readSetting(pool, id) {
+  const result = await pool.query(
+    `SELECT data
+     FROM public.bot_documents
+     WHERE bot_id = $1 AND collection_name = 'settings' AND data->>'_id' = $2
+     LIMIT 1`,
+    [BOT_ID, id],
+  );
+  return result.rows[0]?.data ?? null;
 }
 
 export default async function handler(req, res) {
@@ -30,15 +39,15 @@ export default async function handler(req, res) {
   res.setHeader('Access-Control-Allow-Methods', 'GET, OPTIONS');
   if (req.method === 'OPTIONS') { res.status(204).end(); return; }
 
-  if (!MONGO_URI) {
-    return res.status(500).json({ error: 'MONGO_URI not configured' });
+  if (!DATABASE_URL) {
+    return res.status(500).json({ error: 'DATABASE_URL not configured' });
   }
 
   try {
-    const client = await getClient();
+    const pool = getPool();
     const [botDoc, statsDoc] = await Promise.all([
-      col(client, 'settings').findOne({ _id: 'bot_stats'    }),
-      col(client, 'settings').findOne({ _id: 'global_stats' }),
+      readSetting(pool, 'bot_stats'),
+      readSetting(pool, 'global_stats'),
     ]);
     res.status(200).json({
       servers:          botDoc?.servers          ?? 0,
@@ -47,8 +56,8 @@ export default async function handler(req, res) {
       commandsExecuted: statsDoc?.commandsExecuted ?? 0,
     });
   } catch (err) {
-    _client = null; // force reconnect next time
-    console.error('[stats] MongoDB error:', err.message);
+    _pool = null; // recreate the pool on the next invocation after connection errors
+    console.error('[stats] PostgreSQL error:', err.message);
     res.status(500).json({ error: 'Failed to fetch stats' });
   }
 }

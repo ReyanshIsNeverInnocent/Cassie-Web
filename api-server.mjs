@@ -1,32 +1,34 @@
 // Cassie-Web/api-server.mjs
 // Stats API — serves GET /api/stats (one-shot) and GET /api/stats/stream (SSE).
-// The SSE endpoint uses a MongoDB change stream so clients receive updates the
-// instant the bot writes new data — no client-side polling needed.
+// The SSE endpoint polls PostgreSQL and broadcasts changes to connected clients.
 
 import { createServer } from 'http';
-import { MongoClient }  from 'mongodb';
+import pg from 'pg';
 
 const PORT      = Number(process.env.STATS_API_PORT ?? 3001);
-const MONGO_URI = process.env.MONGO_URI;
+const DATABASE_URL = process.env.DATABASE_URL;
 const BOT_ID    = process.env.BOT_IDENTIFIER ?? '';
-const DB_NAME   = 'CassieDiscordBot';
 
-if (!MONGO_URI) {
-  console.error('[API SERVER] MONGO_URI is not set — exiting.');
+if (!DATABASE_URL) {
+  console.error('[API SERVER] DATABASE_URL is not set — exiting.');
   process.exit(1);
 }
 
-const mongoClient = new MongoClient(MONGO_URI, { tls: true, connectTimeoutMS: 15_000 });
+const pool = new pg.Pool({ connectionString: DATABASE_URL, max: 2, connectionTimeoutMillis: 15_000 });
 
-function col(name) {
-  const prefixed = BOT_ID ? `${BOT_ID}_${name}` : name;
-  return mongoClient.db(DB_NAME).collection(prefixed);
+async function readSetting(id) {
+  const result = await pool.query(
+    `SELECT data FROM public.bot_documents
+     WHERE bot_id = $1 AND collection_name = 'settings' AND data->>'_id' = $2 LIMIT 1`,
+    [BOT_ID, id],
+  );
+  return result.rows[0]?.data ?? null;
 }
 
 async function getStats() {
   const [botDoc, statsDoc] = await Promise.all([
-    col('settings').findOne({ _id: 'bot_stats'    }),
-    col('settings').findOne({ _id: 'global_stats' }),
+    readSetting('bot_stats'),
+    readSetting('global_stats'),
   ]);
   return {
     servers:          botDoc?.servers          ?? 0,
@@ -48,31 +50,26 @@ function broadcast(stats) {
   }
 }
 
-// ── MongoDB change stream — watches both settings docs ────────────────────────
+// ── PostgreSQL polling — watches both settings docs ───────────────────────────
+
+let previousStats = null;
 
 async function watchChanges() {
-  // Watch for any updates to the two docs we care about.
-  const stream = col('settings').watch(
-    [{ $match: { 'documentKey._id': { $in: ['bot_stats', 'global_stats'] } } }],
-    { fullDocument: 'updateLookup' },
-  );
-
-  stream.on('change', async () => {
+  const poll = async () => {
     try {
       const stats = await getStats();
-      broadcast(stats);
+      const serialized = JSON.stringify(stats);
+      if (serialized !== previousStats) {
+        previousStats = serialized;
+        broadcast(stats);
+      }
     } catch (err) {
-      console.error('[API SERVER] Broadcast error:', err.message);
+      console.error('[API SERVER] PostgreSQL stats poll failed:', err.message);
     }
-  });
-
-  stream.on('error', (err) => {
-    console.error('[API SERVER] Change stream error — retrying in 5 s:', err.message);
-    stream.close().catch(() => {});
-    setTimeout(watchChanges, 5_000);
-  });
-
-  console.log('[API SERVER] MongoDB change stream active');
+  };
+  await poll();
+  setInterval(poll, 5_000);
+  console.log('[API SERVER] PostgreSQL stats polling active (5 s)');
 }
 
 // ── HTTP server ───────────────────────────────────────────────────────────────
@@ -186,8 +183,8 @@ async function getDeveloperProfile() {
 // ── Boot ──────────────────────────────────────────────────────────────────────
 
 async function start() {
-  await mongoClient.connect();
-  console.log('[API SERVER] Connected to MongoDB');
+  await pool.query('SELECT 1');
+  console.log('[API SERVER] Connected to PostgreSQL');
   await watchChanges();
   server.listen(PORT, () => {
     console.log(`[API SERVER] Listening on port ${PORT} — /api/stats  /api/stats/stream`);
