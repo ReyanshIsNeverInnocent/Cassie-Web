@@ -5,9 +5,10 @@ Access ts here: https://cassie-web.vercel.app/
 
 ### Vercel environment variables
 
-- `UPSTASH_REDIS_REST_URL`: Upstash Redis REST endpoint. Keep this server-only; do not prefix it with `VITE_`.
-- `UPSTASH_REDIS_REST_TOKEN`: Upstash Redis REST token. Keep this server-only; do not prefix it with `VITE_`.
+- `CF_ACCOUNT_ID`: Cloudflare account ID containing the KV namespace.
+- `CF_KV_NAMESPACE_ID`: ID of the stats KV namespace.
+- `CF_KV_READ_TOKEN`: Cloudflare API token with read access to the stats namespace. Keep server-only; do not prefix it with `VITE_`.
 - `BOT_IDENTIFIER`: Must exactly match the production bot's `BOT_IDENTIFIER` so the website reads its stats key.
 - `DISCORD_TOKEN`: Used server-side by the developer profile API.
 
-The bot publishes a short-lived, aggregated stats snapshot to Upstash Redis every 30 seconds. The website stats API reads that snapshot; it does not need `DATABASE_URL`. The local `api-server.mjs` uses the same Upstash REST variables. The bot itself continues to use `REDIS_URL` for its Redis connection and cache. The stats page refreshes every 30 seconds and the API response is edge-cached briefly to avoid a Redis read per visitor poll.
+The bot publishes an aggregated stats snapshot to Cloudflare Workers KV every five minutes with a 15-minute expiry. Configure the bot host with the same `CF_ACCOUNT_ID` and `CF_KV_NAMESPACE_ID`, plus `CF_KV_WRITE_TOKEN` (write access to this namespace). `CF_KV_READ_TOKEN` should be read-only and is used by Vercel and the local `api-server.mjs`. The stats API does not need `DATABASE_URL`; Redis remains configured on the bot for its separate cache. The website refreshes every 30 seconds and the API response is edge-cached to avoid a KV read on every visitor refresh.

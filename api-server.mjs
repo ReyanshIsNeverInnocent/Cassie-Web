@@ -1,8 +1,8 @@
 // Cassie-Web/api-server.mjs
-// Stats API — reads bot-published Redis snapshots for GET /api/stats and SSE.
+// Stats API — reads bot-published Cloudflare KV snapshots for GET /api/stats and SSE.
 
 import { createServer } from 'http';
-import { getFreshStatsSnapshot } from './server/redisStats.js';
+import { getFreshStatsSnapshot } from './server/cloudflareStats.js';
 
 const PORT      = Number(process.env.STATS_API_PORT ?? 3001);
 const BOT_ID    = process.env.BOT_IDENTIFIER ?? '';
@@ -23,12 +23,12 @@ function broadcast(stats) {
   }
 }
 
-// ── Redis polling — only active while SSE viewers are connected ───────────────
+// ── KV polling — only active while SSE viewers are connected ─────────────────
 
 let previousStats = null;
 let streamTimer = null;
 
-async function pollRedisSnapshot() {
+async function pollKvSnapshot() {
   try {
     const stats = await getStats();
     const payload = stats ?? { status: 'offline' };
@@ -38,14 +38,14 @@ async function pollRedisSnapshot() {
       broadcast(payload);
     }
   } catch (err) {
-    console.error('[API SERVER] Redis stats read failed:', err.message);
+    console.error('[API SERVER] Cloudflare KV stats read failed:', err.message);
   }
 }
 
 function startStreamPolling() {
   if (streamTimer) return;
-  void pollRedisSnapshot();
-  streamTimer = setInterval(() => void pollRedisSnapshot(), 15_000);
+  void pollKvSnapshot();
+  streamTimer = setInterval(() => void pollKvSnapshot(), 60_000);
 }
 
 function stopStreamPollingIfIdle() {
@@ -76,7 +76,7 @@ const server = createServer(async (req, res) => {
       res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'public, s-maxage=25, stale-while-revalidate=30' });
       res.end(JSON.stringify(stats));
     } catch (err) {
-      console.error('[API SERVER] Error reading Redis stats:', err.message);
+      console.error('[API SERVER] Error reading Cloudflare KV stats:', err.message);
       res.writeHead(503, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
       res.end(JSON.stringify({ status: 'offline' }));
     }
@@ -173,7 +173,7 @@ async function getDeveloperProfile() {
 
 async function start() {
   server.listen(PORT, () => {
-    console.log(`[API SERVER] Listening on port ${PORT} — Redis-backed /api/stats  /api/stats/stream`);
+    console.log(`[API SERVER] Listening on port ${PORT} — Cloudflare KV-backed /api/stats  /api/stats/stream`);
   });
 }
 
