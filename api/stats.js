@@ -9,7 +9,7 @@ export default async function handler(req, res) {
   }
 
   try {
-    const snapshot = await getFreshStatsSnapshot(process.env.BOT_IDENTIFIER ?? '');
+    const snapshot = await getFreshStatsSnapshot();
     if (!snapshot) {
       res.setHeader('Cache-Control', 'no-store');
       return res.status(503).json({ status: 'offline', error: 'Fresh bot stats are not available' });

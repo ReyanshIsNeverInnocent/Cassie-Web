@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Activity, Clock3, Cpu, Hash, Layers3, Radio, RefreshCw, Server, Terminal, Users, PowerOff } from 'lucide-react';
+import { Activity, Clock3, Cpu, Hash, Layers3, Radio, Server, Terminal, Users, PowerOff } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -121,11 +121,9 @@ function OfflineCard() {
 export default function Stats() {
   const [phase, setPhase] = useState<Phase>('loading');
   const [data,  setData]  = useState<BotStats | null>(null);
-  const [refreshing, setRefreshing] = useState(false);
   const [, setClock] = useState(0);
 
   const fetchStats = useCallback(async () => {
-    setRefreshing(true);
     try {
       const res = await fetch('/api/stats', { signal: AbortSignal.timeout(8_000) });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -135,8 +133,6 @@ export default function Stats() {
       setPhase('online');
     } catch {
       setPhase('offline');
-    } finally {
-      setRefreshing(false);
     }
   }, []);
 
@@ -167,7 +163,7 @@ export default function Stats() {
             <span className="text-xs font-semibold uppercase tracking-[0.2em]">Live system overview</span>
           </div>
           <h1 className="mt-3 font-display font-extrabold text-4xl md:text-5xl tracking-tight">Cassie at a glance</h1>
-          <p className="mt-2 text-sm sm:text-base text-muted-foreground">Live network and runtime statistics, refreshed every 30 seconds.</p>
+          <p className="mt-2 text-sm sm:text-base text-muted-foreground">Live network and runtime statistics.</p>
         </div>
 
         <div className="flex items-center gap-3 ml-auto">
@@ -200,16 +196,10 @@ export default function Stats() {
             )}
           </AnimatePresence>
 
-          <button
-            onClick={fetchStats}
-            disabled={refreshing}
-            className="liquid-glass h-10 w-10 rounded-full grid place-items-center hover:scale-105 transition-transform disabled:opacity-60"
-            aria-label="Refresh"
-          >
-            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
-          </button>
         </div>
       </motion.div>
+
+      <p className="-mt-6 text-center text-xs text-muted-foreground">Stats refresh automatically every 30 seconds.</p>
 
       {/* ── Metrics ── */}
       <AnimatePresence mode="wait">

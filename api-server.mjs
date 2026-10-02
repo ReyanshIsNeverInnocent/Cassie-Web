@@ -5,10 +5,9 @@ import { createServer } from 'http';
 import { getFreshStatsSnapshot } from './server/cloudflareStats.js';
 
 const PORT      = Number(process.env.STATS_API_PORT ?? 3001);
-const BOT_ID    = process.env.BOT_IDENTIFIER ?? '';
 
 async function getStats() {
-  return getFreshStatsSnapshot(BOT_ID);
+  return getFreshStatsSnapshot();
 }
 
 // ── SSE client registry ───────────────────────────────────────────────────────

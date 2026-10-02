@@ -1,11 +1,11 @@
 const SNAPSHOT_TTL_MS = 15 * 60_000;
 const KEY_PREFIX = 'website:stats:v1';
 
-export function getStatsKey(botIdentifier = '') {
-  return `cassie:${encodeURIComponent(botIdentifier || 'default')}:${KEY_PREFIX}`;
+export function getStatsKey() {
+  return `cassie:${KEY_PREFIX}`;
 }
 
-export async function getFreshStatsSnapshot(botIdentifier = '') {
+export async function getFreshStatsSnapshot() {
   const accountId = process.env.CF_ACCOUNT_ID;
   const namespaceId = process.env.CF_KV_NAMESPACE_ID;
   const readToken = process.env.CF_KV_READ_TOKEN;
@@ -13,7 +13,7 @@ export async function getFreshStatsSnapshot(botIdentifier = '') {
     throw new Error('Cloudflare KV read credentials are not configured');
   }
 
-  const endpoint = `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}/storage/kv/namespaces/${encodeURIComponent(namespaceId)}/values/${encodeURIComponent(getStatsKey(botIdentifier))}`;
+  const endpoint = `https://api.cloudflare.com/client/v4/accounts/${encodeURIComponent(accountId)}/storage/kv/namespaces/${encodeURIComponent(namespaceId)}/values/${encodeURIComponent(getStatsKey())}`;
   const response = await fetch(endpoint, {
     headers: { Authorization: `Bearer ${readToken}` },
     signal: AbortSignal.timeout(8_000),
