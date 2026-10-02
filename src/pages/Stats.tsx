@@ -125,7 +125,7 @@ export default function Stats() {
 
   const fetchStats = useCallback(async () => {
     try {
-      const res = await fetch('/api/stats', { signal: AbortSignal.timeout(8_000) });
+      const res = await fetch('/api/stats', { cache: 'no-store', signal: AbortSignal.timeout(8_000) });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = (await res.json()) as BotStats;
       if (typeof json.timestamp !== 'number') throw new Error('Invalid stats snapshot');

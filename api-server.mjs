@@ -72,7 +72,7 @@ const server = createServer(async (req, res) => {
         res.end(JSON.stringify({ status: 'offline' }));
         return;
       }
-      res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'public, s-maxage=25, stale-while-revalidate=30' });
+      res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=5' });
       res.end(JSON.stringify(stats));
     } catch (err) {
       console.error('[API SERVER] Error reading Cloudflare KV stats:', err.message);
