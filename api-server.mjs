@@ -1,41 +1,14 @@
 // Cassie-Web/api-server.mjs
-// Stats API — serves GET /api/stats (one-shot) and GET /api/stats/stream (SSE).
-// The SSE endpoint polls PostgreSQL and broadcasts changes to connected clients.
+// Stats API — reads bot-published Redis snapshots for GET /api/stats and SSE.
 
 import { createServer } from 'http';
-import pg from 'pg';
+import { getFreshStatsSnapshot } from './server/redisStats.js';
 
 const PORT      = Number(process.env.STATS_API_PORT ?? 3001);
-const DATABASE_URL = process.env.DATABASE_URL;
 const BOT_ID    = process.env.BOT_IDENTIFIER ?? '';
 
-if (!DATABASE_URL) {
-  console.error('[API SERVER] DATABASE_URL is not set — exiting.');
-  process.exit(1);
-}
-
-const pool = new pg.Pool({ connectionString: DATABASE_URL, max: 2, connectionTimeoutMillis: 15_000 });
-
-async function readSetting(id) {
-  const result = await pool.query(
-    `SELECT data FROM public.bot_documents
-     WHERE bot_id = $1 AND collection_name = 'settings' AND data->>'_id' = $2 LIMIT 1`,
-    [BOT_ID, id],
-  );
-  return result.rows[0]?.data ?? null;
-}
-
 async function getStats() {
-  const [botDoc, statsDoc] = await Promise.all([
-    readSetting('bot_stats'),
-    readSetting('global_stats'),
-  ]);
-  return {
-    servers:          botDoc?.servers          ?? 0,
-    members:          botDoc?.members          ?? 0,
-    channels:         botDoc?.channels         ?? 0,
-    commandsExecuted: statsDoc?.commandsExecuted ?? 0,
-  };
+  return getFreshStatsSnapshot(BOT_ID);
 }
 
 // ── SSE client registry ───────────────────────────────────────────────────────
@@ -50,26 +23,35 @@ function broadcast(stats) {
   }
 }
 
-// ── PostgreSQL polling — watches both settings docs ───────────────────────────
+// ── Redis polling — only active while SSE viewers are connected ───────────────
 
 let previousStats = null;
+let streamTimer = null;
 
-async function watchChanges() {
-  const poll = async () => {
-    try {
-      const stats = await getStats();
-      const serialized = JSON.stringify(stats);
-      if (serialized !== previousStats) {
-        previousStats = serialized;
-        broadcast(stats);
-      }
-    } catch (err) {
-      console.error('[API SERVER] PostgreSQL stats poll failed:', err.message);
+async function pollRedisSnapshot() {
+  try {
+    const stats = await getStats();
+    const payload = stats ?? { status: 'offline' };
+    const serialized = JSON.stringify(payload);
+    if (serialized !== previousStats) {
+      previousStats = serialized;
+      broadcast(payload);
     }
-  };
-  await poll();
-  setInterval(poll, 5_000);
-  console.log('[API SERVER] PostgreSQL stats polling active (5 s)');
+  } catch (err) {
+    console.error('[API SERVER] Redis stats read failed:', err.message);
+  }
+}
+
+function startStreamPolling() {
+  if (streamTimer) return;
+  void pollRedisSnapshot();
+  streamTimer = setInterval(() => void pollRedisSnapshot(), 15_000);
+}
+
+function stopStreamPollingIfIdle() {
+  if (sseClients.size || !streamTimer) return;
+  clearInterval(streamTimer);
+  streamTimer = null;
 }
 
 // ── HTTP server ───────────────────────────────────────────────────────────────
@@ -86,12 +68,17 @@ const server = createServer(async (req, res) => {
   if (url === '/api/stats') {
     try {
       const stats = await getStats();
-      res.writeHead(200, { 'Content-Type': 'application/json' });
+      if (!stats) {
+        res.writeHead(503, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+        res.end(JSON.stringify({ status: 'offline' }));
+        return;
+      }
+      res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'public, s-maxage=25, stale-while-revalidate=30' });
       res.end(JSON.stringify(stats));
     } catch (err) {
-      console.error('[API SERVER] Error fetching stats:', err.message);
-      res.writeHead(500, { 'Content-Type': 'application/json' });
-      res.end(JSON.stringify({ error: 'Internal server error' }));
+      console.error('[API SERVER] Error reading Redis stats:', err.message);
+      res.writeHead(503, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+      res.end(JSON.stringify({ status: 'offline' }));
     }
     return;
   }
@@ -110,7 +97,7 @@ const server = createServer(async (req, res) => {
     // Send current stats immediately so the client doesn't wait for the next change.
     try {
       const stats = await getStats();
-      res.write(`data: ${JSON.stringify(stats)}\n\n`);
+      res.write(`data: ${JSON.stringify(stats ?? { status: 'offline' })}\n\n`);
     } catch { /* non-fatal — client will get next broadcast */ }
 
     // Keep-alive comment every 25 s (prevents proxy/browser timeouts).
@@ -119,10 +106,12 @@ const server = createServer(async (req, res) => {
     }, 25_000);
 
     sseClients.add(res);
+    startStreamPolling();
 
     req.on('close', () => {
       clearInterval(keepAlive);
       sseClients.delete(res);
+      stopStreamPollingIfIdle();
     });
     return;
   }
@@ -183,11 +172,8 @@ async function getDeveloperProfile() {
 // ── Boot ──────────────────────────────────────────────────────────────────────
 
 async function start() {
-  await pool.query('SELECT 1');
-  console.log('[API SERVER] Connected to PostgreSQL');
-  await watchChanges();
   server.listen(PORT, () => {
-    console.log(`[API SERVER] Listening on port ${PORT} — /api/stats  /api/stats/stream`);
+    console.log(`[API SERVER] Listening on port ${PORT} — Redis-backed /api/stats  /api/stats/stream`);
   });
 }
 

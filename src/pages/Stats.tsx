@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Server, Users, Hash, Terminal, RefreshCw, PowerOff } from 'lucide-react';
+import { Activity, Clock3, Cpu, Hash, Layers3, Radio, RefreshCw, Server, Terminal, Users, PowerOff } from 'lucide-react';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -9,6 +9,12 @@ interface BotStats {
   members:          number;
   channels:         number;
   commandsExecuted: number;
+  ping:             number;
+  uptimeSecs:       number;
+  memoryMB:         number;
+  shards:           number;
+  clusters:         number;
+  timestamp:        number;
 }
 
 type Phase = 'loading' | 'online' | 'offline';
@@ -18,7 +24,7 @@ type Phase = 'loading' | 'online' | 'offline';
 // Always use a relative path — in dev Vite proxies /api → api-server.mjs,
 // in production Vercel routes /api → the serverless function.
 // No VITE_STATS_API_URL needed.
-const INTERVAL = 5_000;
+const INTERVAL = 30_000;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -28,22 +34,36 @@ function fmtNum(n: number): string {
   return n.toLocaleString();
 }
 
+function fmtUptime(seconds: number): string {
+  const days = Math.floor(seconds / 86_400);
+  const hours = Math.floor((seconds % 86_400) / 3_600);
+  const minutes = Math.floor((seconds % 3_600) / 60);
+  if (days) return `${days}d ${hours}h`;
+  if (hours) return `${hours}h ${minutes}m`;
+  return `${minutes}m`;
+}
+
+function fmtAge(timestamp: number): string {
+  const seconds = Math.max(0, Math.floor((Date.now() - timestamp) / 1_000));
+  return seconds < 5 ? 'just now' : `${seconds}s ago`;
+}
+
 // ─── Cards config ─────────────────────────────────────────────────────────────
 
 const CARDS = [
-  { key: 'servers',          icon: Server,   label: 'Servers'      },
-  { key: 'members',          icon: Users,    label: 'Members'      },
-  { key: 'channels',         icon: Hash,     label: 'Channels'     },
-  { key: 'commandsExecuted', icon: Terminal, label: 'Commands Run' },
+  { key: 'servers',          icon: Server,   label: 'Servers',      note: 'Communities protected' },
+  { key: 'members',          icon: Users,    label: 'Members',      note: 'Across all servers' },
+  { key: 'channels',         icon: Hash,     label: 'Channels',     note: 'Across all servers' },
+  { key: 'commandsExecuted', icon: Terminal, label: 'Commands run', note: 'All-time total' },
 ] as const;
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 
-function StatCard({ icon: Icon, label, value }: { icon: React.ElementType; label: string; value: string }) {
+function StatCard({ icon: Icon, label, value, note }: { icon: React.ElementType; label: string; value: string; note: string }) {
   return (
     <motion.div
       layout
-      className="liquid-glass rounded-2xl p-6 flex flex-col gap-2"
+      className="liquid-glass rounded-2xl p-5 sm:p-6 flex flex-col gap-2 min-h-36"
       initial={{ opacity: 0, y: 12 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.4 }}
@@ -54,13 +74,14 @@ function StatCard({ icon: Icon, label, value }: { icon: React.ElementType; label
       </div>
       <motion.p
         key={value}
-        className="font-display font-extrabold text-3xl tracking-tight"
+        className="font-display font-extrabold text-3xl sm:text-4xl tracking-tight tabular-nums"
         initial={{ opacity: 0, y: -6 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.25 }}
       >
         {value}
       </motion.p>
+      <span className="text-xs text-muted-foreground">{note}</span>
     </motion.div>
   );
 }
@@ -100,16 +121,22 @@ function OfflineCard() {
 export default function Stats() {
   const [phase, setPhase] = useState<Phase>('loading');
   const [data,  setData]  = useState<BotStats | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [, setClock] = useState(0);
 
   const fetchStats = useCallback(async () => {
+    setRefreshing(true);
     try {
       const res = await fetch('/api/stats', { signal: AbortSignal.timeout(8_000) });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = (await res.json()) as BotStats;
+      if (typeof json.timestamp !== 'number') throw new Error('Invalid stats snapshot');
       setData(json);
       setPhase('online');
     } catch {
-      setPhase(prev => (prev === 'loading' ? 'offline' : prev === 'online' ? 'offline' : prev));
+      setPhase('offline');
+    } finally {
+      setRefreshing(false);
     }
   }, []);
 
@@ -119,24 +146,31 @@ export default function Stats() {
     return () => clearInterval(id);
   }, [fetchStats]);
 
-  return (
-    <section className="container max-w-3xl pt-8 pb-28 space-y-8">
+  useEffect(() => {
+    const id = setInterval(() => setClock((clock) => clock + 1), 5_000);
+    return () => clearInterval(id);
+  }, []);
 
-      {/* ── Header ── */}
+  return (
+    <section className="container max-w-5xl pt-8 md:pt-12 pb-28 space-y-8 md:space-y-10">
+
+      {/* ── Dashboard header ── */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.55 }}
-        className="flex items-center justify-between gap-4 flex-wrap"
+        className="liquid-glass rounded-3xl p-6 sm:p-8 flex items-end justify-between gap-6 flex-wrap"
       >
         <div>
-          <span className="text-xs font-semibold uppercase tracking-widest text-primary">Live Stats</span>
-          <h1 className="mt-1 font-display font-extrabold text-4xl md:text-5xl tracking-tight">
-            Bot Statistics
-          </h1>
+          <div className="flex items-center gap-2 text-primary">
+            <Activity className="h-4 w-4" />
+            <span className="text-xs font-semibold uppercase tracking-[0.2em]">Live system overview</span>
+          </div>
+          <h1 className="mt-3 font-display font-extrabold text-4xl md:text-5xl tracking-tight">Cassie at a glance</h1>
+          <p className="mt-2 text-sm sm:text-base text-muted-foreground">Live network and runtime statistics, refreshed every 30 seconds.</p>
         </div>
 
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 ml-auto">
           <AnimatePresence mode="wait">
             {phase === 'loading' ? (
               <motion.div key="loading"
@@ -168,20 +202,20 @@ export default function Stats() {
 
           <button
             onClick={fetchStats}
-            className="liquid-glass h-9 w-9 rounded-full grid place-items-center hover:scale-105 transition-transform"
+            disabled={refreshing}
+            className="liquid-glass h-10 w-10 rounded-full grid place-items-center hover:scale-105 transition-transform disabled:opacity-60"
             aria-label="Refresh"
           >
-            <RefreshCw className="h-3.5 w-3.5" />
+            <RefreshCw className={`h-4 w-4 ${refreshing ? 'animate-spin' : ''}`} />
           </button>
         </div>
       </motion.div>
 
-      {/* ── Content ── */}
+      {/* ── Metrics ── */}
       <AnimatePresence mode="wait">
-
         {phase === 'loading' && (
           <motion.div key="skeleton" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-            className="grid grid-cols-2 gap-3">
+            className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
             {Array.from({ length: 4 }).map((_, i) => <SkeletonCard key={i} />)}
           </motion.div>
         )}
@@ -193,16 +227,55 @@ export default function Stats() {
         )}
 
         {phase === 'online' && data && (
-          <motion.div key="stats" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-            <div className="grid grid-cols-2 gap-3">
-              {CARDS.map(({ key, icon, label }) => (
-                <StatCard key={key} icon={icon} label={label} value={fmtNum(data[key])} />
+          <motion.div key="stats" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-8">
+            <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
+              {CARDS.map(({ key, icon, label, note }) => (
+                <StatCard key={key} icon={icon} label={label} note={note} value={fmtNum(data[key])} />
               ))}
             </div>
+
+            <div className="space-y-4">
+              <div className="flex items-end justify-between gap-4">
+                <div>
+                  <span className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Under the hood</span>
+                  <h2 className="mt-1 font-display font-bold text-2xl">Runtime health</h2>
+                </div>
+                <span className="text-xs text-muted-foreground">Snapshot {fmtAge(data.timestamp)}</span>
+              </div>
+
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+                <RuntimeCard icon={Radio} label="Gateway ping" value={data.ping >= 0 ? `${data.ping} ms` : '—'} detail="Discord connection latency" />
+                <RuntimeCard icon={Clock3} label="Uptime" value={fmtUptime(data.uptimeSecs)} detail="Current process uptime" />
+                <RuntimeCard icon={Layers3} label="Shards / clusters" value={`${data.shards} / ${data.clusters}`} detail="Gateway workload" />
+                <RuntimeCard icon={Cpu} label="Memory" value={`${data.memoryMB} MB`} detail="Publisher process RSS" />
+              </div>
+            </div>
+
+            <p className="text-center text-xs text-muted-foreground">Stats are published by Cassie and expire automatically if the bot stops reporting.</p>
           </motion.div>
         )}
 
       </AnimatePresence>
     </section>
+  );
+}
+
+function RuntimeCard({ icon: Icon, label, value, detail }: {
+  icon: React.ElementType;
+  label: string;
+  value: string;
+  detail: string;
+}) {
+  return (
+    <div className="liquid-glass rounded-2xl p-5 min-h-32 flex flex-col justify-between gap-4">
+      <div className="flex items-center gap-2 text-muted-foreground">
+        <Icon className="h-4 w-4 text-primary" />
+        <span className="text-xs font-semibold uppercase tracking-wider">{label}</span>
+      </div>
+      <div>
+        <p className="font-display font-bold text-2xl tabular-nums">{value}</p>
+        <p className="mt-1 text-xs text-muted-foreground">{detail}</p>
+      </div>
+    </div>
   );
 }
