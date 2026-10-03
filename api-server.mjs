@@ -68,15 +68,15 @@ const server = createServer(async (req, res) => {
     try {
       const stats = await getStats();
       if (!stats) {
-        res.writeHead(503, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+        res.writeHead(503, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store, no-cache, must-revalidate' });
         res.end(JSON.stringify({ status: 'offline' }));
         return;
       }
-      res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'public, s-maxage=10, stale-while-revalidate=5' });
+      res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store, no-cache, must-revalidate' });
       res.end(JSON.stringify(stats));
     } catch (err) {
       console.error('[API SERVER] Error reading Cloudflare KV stats:', err.message);
-      res.writeHead(503, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store' });
+      res.writeHead(503, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store, no-cache, must-revalidate' });
       res.end(JSON.stringify({ status: 'offline' }));
     }
     return;

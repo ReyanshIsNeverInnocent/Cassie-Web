@@ -174,7 +174,7 @@ export default function About() {
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ delay: 0.45 }}
-          className="mt-9 grid gap-4 sm:grid-cols-[1.08fr_0.92fr] max-w-xl mx-auto text-left"
+          className="mt-9 grid items-start gap-4 sm:grid-cols-[1.08fr_0.92fr] max-w-xl mx-auto text-left"
         >
           <div className="liquid-glass rounded-2xl p-3.5">
             <div className="px-2 pb-2.5 flex items-center justify-between">
@@ -238,33 +238,40 @@ export default function About() {
             </div>
           </div>
 
-          <div className="liquid-glass rounded-2xl p-3.5 relative overflow-hidden">
+          <div className="liquid-glass rounded-2xl p-4 relative overflow-hidden">
             <div className="absolute -right-10 -top-10 h-28 w-28 rounded-full bg-primary/10 blur-2xl pointer-events-none" />
-            <div className="relative px-2 pb-2.5 flex items-start justify-between">
-              <div>
-                <p className="text-[10px] uppercase tracking-[0.22em] text-primary font-semibold">Built with</p>
-                <p className="mt-1 text-xs text-muted-foreground">The tools behind Cassie</p>
+            <div className="relative flex items-center gap-3">
+              <div className="grid h-10 w-10 shrink-0 place-items-center rounded-xl border border-primary/20 bg-primary/10 text-primary">
+                <Code2 className="h-[18px] w-[18px]" />
               </div>
-              <Code2 className="h-5 w-5 text-primary/70" />
+              <div className="min-w-0">
+                <p className="text-sm font-semibold">Built with</p>
+                <p className="mt-0.5 text-[11px] text-muted-foreground">Cassie’s core language stack</p>
+              </div>
             </div>
 
-            <div className="relative grid grid-cols-2 gap-2">
-              {developerConfig.languages.map((lang) => (
+            <div className="relative mt-4 space-y-2">
+              {developerConfig.languages.map((lang, index) => (
                 <div
                   key={lang.id}
-                  className="rounded-xl border border-border/70 bg-background/20 px-2.5 py-3"
+                  className="flex items-center gap-3 rounded-xl border border-border/60 bg-background/25 p-3 transition-colors hover:border-primary/30 hover:bg-primary/[0.04]"
                 >
-                  <div className="flex items-center gap-2">
+                  <div className="grid h-10 w-10 shrink-0 place-items-center rounded-lg border border-border/50 bg-background/40">
                     {lang.id === 'javascript' ? (
-                      <JavaScriptIcon className="h-6 w-6 rounded flex-shrink-0" />
+                      <JavaScriptIcon className="h-7 w-7 rounded-md" />
                     ) : (
-                      <TypeScriptIcon className="h-6 w-6 rounded flex-shrink-0" />
+                      <TypeScriptIcon className="h-7 w-7 rounded-md" />
                     )}
-                    <span className="text-xs font-semibold">{lang.label}</span>
                   </div>
-                  <p className="mt-2 text-[10px] leading-tight text-muted-foreground">
-                    {lang.id === 'javascript' ? 'Runtime & tooling' : 'Typed interfaces'}
-                  </p>
+                  <div className="min-w-0 flex-1">
+                    <p className="text-xs font-semibold text-foreground">{lang.label}</p>
+                    <p className="mt-0.5 text-[10px] leading-relaxed text-muted-foreground">
+                      {lang.id === 'javascript' ? 'Runtime, scripts & tooling' : 'Typed bot & web interfaces'}
+                    </p>
+                  </div>
+                  <span className="text-[9px] font-mono tabular-nums text-muted-foreground/70">
+                    {String(index + 1).padStart(2, '0')}
+                  </span>
                 </div>
               ))}
             </div>

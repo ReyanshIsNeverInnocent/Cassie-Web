@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Activity, Clock3, Cpu, Hash, Layers3, Radio, Server, Terminal, Users, PowerOff } from 'lucide-react';
 
@@ -24,7 +24,10 @@ type Phase = 'loading' | 'online' | 'offline';
 // Always use a relative path — in dev Vite proxies /api → api-server.mjs,
 // in production Vercel routes /api → the serverless function.
 // No VITE_STATS_API_URL needed.
-const INTERVAL = 30_000;
+const POLL_INTERVAL = 30_000;
+const RETRY_INTERVAL = 5_000;
+const MAX_RETRY_INTERVAL = 30_000;
+const MAX_SNAPSHOT_AGE = 2 * 60_000;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -43,9 +46,9 @@ function fmtUptime(seconds: number): string {
   return `${minutes}m`;
 }
 
-function fmtAge(timestamp: number): string {
-  const seconds = Math.max(0, Math.floor((Date.now() - timestamp) / 1_000));
-  return seconds < 5 ? 'just now' : `${seconds}s ago`;
+function fmtAge(timestamp: number, now: number): string {
+  const seconds = Math.max(0, Math.floor((now - timestamp) / 1_000));
+  return `${seconds}s ago`;
 }
 
 // ─── Cards config ─────────────────────────────────────────────────────────────
@@ -116,36 +119,90 @@ function OfflineCard() {
   );
 }
 
+function SnapshotAge({ receivedAt }: { receivedAt: number }) {
+  const [now, setNow] = useState(() => Date.now());
+
+  useEffect(() => {
+    const id = window.setInterval(() => setNow(Date.now()), 1_000);
+    return () => window.clearInterval(id);
+  }, []);
+
+  return <span className="text-xs text-muted-foreground">Snapshot received {fmtAge(receivedAt, now)}</span>;
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export default function Stats() {
   const [phase, setPhase] = useState<Phase>('loading');
   const [data,  setData]  = useState<BotStats | null>(null);
-  const [, setClock] = useState(0);
+  const [receivedAt, setReceivedAt] = useState<number | null>(null);
+  const [reconnecting, setReconnecting] = useState(false);
+  const latestData = useRef<BotStats | null>(null);
+  const consecutiveFailures = useRef(0);
 
-  const fetchStats = useCallback(async () => {
+  const fetchStats = useCallback(async (): Promise<boolean> => {
     try {
       const res = await fetch('/api/stats', { cache: 'no-store', signal: AbortSignal.timeout(8_000) });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = (await res.json()) as BotStats;
-      if (typeof json.timestamp !== 'number') throw new Error('Invalid stats snapshot');
+      if (!Number.isFinite(json.timestamp) || json.timestamp <= 0 || json.timestamp > Date.now() + 30_000) {
+        throw new Error('Invalid stats snapshot timestamp');
+      }
+      const isNewSnapshot = latestData.current?.timestamp !== json.timestamp;
+      latestData.current = json;
+      consecutiveFailures.current = 0;
       setData(json);
+      if (isNewSnapshot) setReceivedAt(Date.now());
       setPhase('online');
+      setReconnecting(false);
+      return true;
     } catch {
-      setPhase('offline');
+      consecutiveFailures.current += 1;
+      setReconnecting(true);
+      const lastSnapshot = latestData.current;
+      if (lastSnapshot) {
+        setPhase(Date.now() - lastSnapshot.timestamp > MAX_SNAPSHOT_AGE ? 'offline' : 'online');
+      } else if (consecutiveFailures.current >= 2) {
+        setPhase('offline');
+      }
+      return false;
     }
   }, []);
 
   useEffect(() => {
-    fetchStats();
-    const id = setInterval(fetchStats, INTERVAL);
-    return () => clearInterval(id);
-  }, [fetchStats]);
+    let cancelled = false;
+    let requestInFlight = false;
+    let timer: number | undefined;
+    let failures = 0;
 
-  useEffect(() => {
-    const id = setInterval(() => setClock((clock) => clock + 1), 5_000);
-    return () => clearInterval(id);
-  }, []);
+    const poll = async () => {
+      if (cancelled || requestInFlight) return;
+      requestInFlight = true;
+      const succeeded = await fetchStats();
+      requestInFlight = false;
+      if (cancelled) return;
+
+      failures = succeeded ? 0 : failures + 1;
+      const retryDelay = Math.min(RETRY_INTERVAL * 2 ** Math.max(0, failures - 1), MAX_RETRY_INTERVAL);
+      timer = window.setTimeout(poll, succeeded ? POLL_INTERVAL : retryDelay);
+    };
+
+    const refreshWhenVisible = () => {
+      if (document.visibilityState !== 'visible') return;
+      if (timer !== undefined) window.clearTimeout(timer);
+      void poll();
+    };
+
+    void poll();
+    document.addEventListener('visibilitychange', refreshWhenVisible);
+    window.addEventListener('online', refreshWhenVisible);
+    return () => {
+      cancelled = true;
+      if (timer !== undefined) window.clearTimeout(timer);
+      document.removeEventListener('visibilitychange', refreshWhenVisible);
+      window.removeEventListener('online', refreshWhenVisible);
+    };
+  }, [fetchStats]);
 
   return (
     <section className="container max-w-5xl pt-8 md:pt-12 pb-28 space-y-8 md:space-y-10">
@@ -175,7 +232,7 @@ export default function Stats() {
                 <span className="h-2 w-2 rounded-full bg-muted-foreground animate-pulse" />
                 Connecting...
               </motion.div>
-            ) : phase === 'online' ? (
+            ) : phase === 'online' && !reconnecting ? (
               <motion.div key="online"
                 initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
                 className="liquid-glass px-4 py-2 rounded-full flex items-center gap-2 text-sm font-medium">
@@ -184,6 +241,13 @@ export default function Stats() {
                   <span className="relative h-2 w-2 rounded-full bg-emerald-500 block" />
                 </span>
                 Live
+              </motion.div>
+            ) : phase === 'online' ? (
+              <motion.div key="reconnecting"
+                initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
+                className="liquid-glass px-4 py-2 rounded-full flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+                Reconnecting
               </motion.div>
             ) : (
               <motion.div key="offline"
@@ -198,8 +262,6 @@ export default function Stats() {
 
         </div>
       </motion.div>
-
-      <p className="-mt-6 text-center text-xs text-muted-foreground">Stats refresh automatically every 30 seconds.</p>
 
       {/* ── Metrics ── */}
       <AnimatePresence mode="wait">
@@ -230,7 +292,7 @@ export default function Stats() {
                   <span className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Under the hood</span>
                   <h2 className="mt-1 font-display font-bold text-2xl">Runtime health</h2>
                 </div>
-                <span className="text-xs text-muted-foreground">Snapshot {fmtAge(data.timestamp)}</span>
+                {receivedAt !== null && <SnapshotAge receivedAt={receivedAt} />}
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">

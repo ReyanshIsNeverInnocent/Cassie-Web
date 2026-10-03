@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import { marqueeConfig } from '@/config/marquee';
 
 function MarqueeGroup({ hidden }: { hidden?: boolean }) {
@@ -18,14 +19,34 @@ function MarqueeGroup({ hidden }: { hidden?: boolean }) {
 }
 
 export default function Marquee() {
+  const [fontReady, setFontReady] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const prepareMarquee = async () => {
+      try {
+        await document.fonts.load('italic 500 18px Fraunces');
+        await document.fonts.ready;
+      } catch {
+        // Start with the fallback font if the web font cannot be loaded.
+      } finally {
+        if (isMounted) setFontReady(true);
+      }
+    };
+
+    void prepareMarquee();
+    return () => { isMounted = false; };
+  }, []);
+
   return (
     <div
-      className="relative w-full overflow-hidden py-6 border-y border-border/40 marquee-mask"
+      className="group relative w-full overflow-hidden py-6 border-y border-border/60 marquee-mask"
       role="marquee"
       aria-label="Cassie highlights"
     >
       <div
-        className="flex w-max animate-marquee hover:[animation-play-state:paused]"
+        className={`flex w-max ${fontReady ? 'animate-marquee group-hover:[animation-play-state:paused]' : ''}`}
         style={{ '--marquee-duration': `${marqueeConfig.speedSeconds}s` } as React.CSSProperties}
       >
         <MarqueeGroup />

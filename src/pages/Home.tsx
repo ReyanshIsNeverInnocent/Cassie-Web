@@ -2,12 +2,14 @@ import { useEffect, useId, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import {
   motion,
-  useMotionValue, useSpring, useTransform, useInView,
+  useMotionValue, useSpring, useTransform, useReducedMotion,
   AnimatePresence,
   type MotionValue,
 } from 'framer-motion';
-import { ExternalLink, ArrowRight, Terminal, ChevronDown } from 'lucide-react';
+import { ArrowRight, ExternalLink, Terminal, ChevronDown } from 'lucide-react';
 import { site } from '@/config/site';
+import Cta from '@/components/Cta';
+import FeatureCards from '@/components/FeatureCards';
 
 /* ─────────────────────────────────────────────────────────────────────────────
    Aesthetic SVG decorative shapes — replace childish emoji-sticker PNGs.
@@ -208,70 +210,77 @@ function GradientReveal({
   );
 }
 
-/** Spring-driven count-up that starts when element enters viewport */
-function AnimatedNumber({ to, suffix = '' }: { to: number; suffix?: string }) {
-  const ref    = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, margin: '-80px' });
-  const spring = useSpring(0, { mass: 1, stiffness: 36, damping: 16 });
-  const display = useTransform(spring, (v) => `${Math.floor(v)}${suffix}`);
-
-  useEffect(() => { if (inView) spring.set(to); }, [inView, to, spring]);
-
-  return <motion.span ref={ref}>{display}</motion.span>;
-}
-
-/** 3-D tilt card with live shine overlay */
-function TiltCard({ children, className }: { children: React.ReactNode; className?: string }) {
-  const ref = useRef<HTMLDivElement>(null);
-  const px  = useMotionValue(0.5);
-  const py  = useMotionValue(0.5);
-  const rx  = useTransform(py, [0, 1], [6,  -6]);
-  const ry  = useTransform(px, [0, 1], [-6,  6]);
-
-  const shineX = useTransform(px, [0, 1], ['0%',   '100%']);
-  const shineY = useTransform(py, [0, 1], ['0%',   '100%']);
-
-  const EDGE_DEAD_ZONE = 0.08;
-
-  const onMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    const r = ref.current?.getBoundingClientRect();
-    if (!r) return;
-
-    const x = (e.clientX - r.left) / r.width;
-    const y = (e.clientY - r.top) / r.height;
-
-    const isNearEdge = x < EDGE_DEAD_ZONE || x > 1 - EDGE_DEAD_ZONE || y < EDGE_DEAD_ZONE || y > 1 - EDGE_DEAD_ZONE;
-
-    if (isNearEdge) {
-      px.set(0.5);
-      py.set(0.5);
-      return;
-    }
-
-    px.set(x);
-    py.set(y);
-  };
-  const onLeave = () => { px.set(0.5); py.set(0.5); };
+/** A vertical reel that spins through glyphs and settles on its final character. */
+function SlotCharacter({ character, index, duration }: {
+  character: string;
+  index: number;
+  duration: number;
+}) {
+  const glyphs = /[0-9]/.test(character) ? '0123456789' : '!?#$%&*@+';
+  const startAt = (character.charCodeAt(0) + index * 3) % glyphs.length;
+  const revolutions = 2 + (index % 2);
+  const spin = Array.from(
+    { length: glyphs.length * revolutions },
+    (_, step) => glyphs[(startAt + step) % glyphs.length],
+  ).join('');
+  const reel = `${spin}${character}`;
+  const gradientStyle = {
+    background: 'var(--gradient-text)',
+    WebkitBackgroundClip: 'text',
+    WebkitTextFillColor: 'transparent',
+    backgroundClip: 'text',
+  } as const;
 
   return (
-    <motion.div
-      ref={ref}
-      onMouseMove={onMove}
-      onMouseLeave={onLeave}
-      style={{ rotateX: rx, rotateY: ry, transformStyle: 'preserve-3d', perspective: 900 }}
-      className={`relative group ${className ?? ''}`}
+    <span
+      aria-hidden="true"
+      className="inline-block h-[1em] overflow-hidden align-bottom"
+      style={{
+        width: character === '%' ? '0.9em'
+          : character === '.' ? '0.35em'
+          : character === ' ' ? '0.3em'
+          : '0.62em',
+      }}
     >
-      {/* Shine overlay — follows cursor */}
-      <motion.div
-        className="absolute inset-0 rounded-2xl pointer-events-none z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
-        style={{
-          background: `radial-gradient(circle at ${shineX} ${shineY},
-            hsl(228 80% 96% / 0.13) 0%,
-            transparent 58%)`,
+      <motion.span
+        className="block text-center tabular-nums"
+        initial={{ y: 0 }}
+        animate={{ y: `-${reel.length - 1}em` }}
+        transition={{
+          duration,
+          delay: 1.65,
+          ease: [0.12, 0.8, 0.18, 1],
         }}
-      />
-      {children}
-    </motion.div>
+        style={gradientStyle}
+      >
+        {Array.from(reel, (glyph, row) => (
+          <span key={row} className="block h-[1em] leading-[1em]">{glyph}</span>
+        ))}
+      </motion.span>
+    </span>
+  );
+}
+
+/** Slot-machine text animation; the final value is also exposed to screen readers. */
+function SlotValue({ value, duration }: { value: string; duration: number }) {
+  const reduceMotion = useReducedMotion();
+
+  if (reduceMotion) return <span>{value}</span>;
+
+  return (
+    <span className="inline-flex">
+      <span className="sr-only">{value}</span>
+      <span aria-hidden="true" className="inline-flex">
+        {Array.from(value, (character, index) => (
+          <SlotCharacter
+            key={`${index}-${character}`}
+            character={character}
+            index={index}
+            duration={Math.max(0.55, duration - (value.length - index - 1) * 0.14)}
+          />
+        ))}
+      </span>
+    </span>
   );
 }
 
@@ -409,16 +418,16 @@ function Hero() {
           {/* Stats */}
           <div className="mt-10 flex gap-4 flex-wrap">
             {[
-              { label: 'Commands', to: site.bot.commandCount, suffix: '+' },
-              { label: 'Uptime',   to: 99,                    suffix: '.9%' },
-              { label: 'Prefix',   to: null,                  literal: site.bot.prefix },
-            ].map((s, i) => (
+              { label: 'Commands', value: `${site.bot.commandCount}+`, duration: 2.2 },
+              { label: 'Uptime',   value: site.bot.uptime,              duration: 1.55 },
+              { label: 'Prefix',   value: site.bot.prefix,             duration: 0.9 },
+            ].map((s) => (
               <motion.div
                 key={s.label}
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1,  y: 0 }}
-                transition={{ delay: 1.45 + i * 0.12, ease: [0.34, 1.56, 0.64, 1] }}
-                className="liquid-glass rounded-2xl px-5 py-4 text-center min-w-[90px]"
+                transition={{ delay: 1.45, ease: [0.34, 1.56, 0.64, 1] }}
+                className={`liquid-glass rounded-2xl px-5 py-4 text-center ${s.label === 'Uptime' ? 'min-w-[130px]' : 'min-w-[90px]'}`}
               >
                 <div
                   className="text-2xl font-display font-bold"
@@ -429,10 +438,7 @@ function Hero() {
                     backgroundClip:       'text',
                   }}
                 >
-                  {s.to !== null
-                    ? <AnimatedNumber to={s.to} suffix={s.suffix} />
-                    : s.literal
-                  }
+                  <SlotValue value={s.value} duration={s.duration} />
                 </div>
                 <div className="text-xs text-muted-foreground mt-1">{s.label}</div>
               </motion.div>
@@ -560,30 +566,7 @@ function Features() {
         </p>
       </Reveal>
 
-      <div className="mt-14 grid sm:grid-cols-2 lg:grid-cols-3 gap-5" style={{ perspective: 1200 }}>
-        {site.features.map((f, i) => (
-          <motion.div
-            key={f.title}
-            initial={{ opacity: 0, y: 36, filter: 'blur(8px)' }}
-            whileInView={{ opacity: 1, y: 0, filter: 'blur(0px)' }}
-            viewport={{ once: true, margin: '-40px' }}
-            transition={{ duration: 0.65, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <TiltCard className="liquid-glass rounded-2xl p-7 h-full cursor-default">
-              <motion.div
-                className="h-12 w-12 rounded-xl bg-aurora grid place-items-center mb-5 shadow-[var(--shadow-glow)] group-hover:rotate-6 transition-transform [transition-duration:500ms]"
-                style={{ animation: 'aurora 3s linear infinite' }}
-                whileHover={{ rotate: 8, scale: 1.1 }}
-                transition={{ type: 'spring', stiffness: 300, damping: 18 }}
-              >
-                <f.icon className="h-5 w-5 text-white" />
-              </motion.div>
-              <h3 className="font-display font-semibold text-[17px] mb-2">{f.title}</h3>
-              <p className="text-sm text-muted-foreground leading-relaxed">{f.description}</p>
-            </TiltCard>
-          </motion.div>
-        ))}
-      </div>
+      <FeatureCards />
 
       <motion.div
         initial={{ opacity: 0 }}
@@ -704,86 +687,6 @@ function Faq() {
           ))}
         </div>
       </Reveal>
-    </section>
-  );
-}
-
-/* ─────────────────────────────────────────────────────────────────────────────
-   CTA
-───────────────────────────────────────────────────────────────────────────── */
-function Cta() {
-  return (
-    <section className="container max-w-5xl py-10 pb-8">
-      <motion.div
-        initial={{ opacity: 0, y: 32, scale: 0.95, filter: 'blur(10px)' }}
-        whileInView={{ opacity: 1, y: 0, scale: 1, filter: 'blur(0px)' }}
-        viewport={{ once: true }}
-        transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-        className="relative overflow-hidden rounded-3xl px-8 md:px-16 py-16 text-center"
-        style={{ background: 'var(--gradient-aurora)', backgroundSize: '300% 300%', animation: 'aurora 24s linear infinite' }}
-      >
-        <FloatingDecor className="absolute top-4 right-4 sm:right-8" size={28} duration={5} rotate={10}>
-          <CrystalDecor size={28} />
-        </FloatingDecor>
-        <FloatingDecor className="absolute bottom-4 left-4 sm:left-8 sm:bottom-6" size={26} duration={4.5} delay={0.4} rotate={12}>
-          <StarburstDecor size={26} />
-        </FloatingDecor>
-        {/* Floating orbs inside CTA */}
-        <motion.div
-          className="absolute -top-14 -left-14 h-48 w-48 rounded-full bg-white/10 blur-3xl pointer-events-none"
-          animate={{ scale: [1, 1.15, 1], opacity: [0.5, 0.8, 0.5] }}
-          transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut' }}
-        />
-        <motion.div
-          className="absolute -bottom-14 -right-14 h-48 w-48 rounded-full bg-white/10 blur-3xl pointer-events-none"
-          animate={{ scale: [1, 1.15, 1], opacity: [0.5, 0.8, 0.5] }}
-          transition={{ duration: 5, repeat: Infinity, ease: 'easeInOut', delay: 2.5 }}
-        />
-        {/* Top shimmer line */}
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 h-px w-1/2 bg-white/30" />
-
-        <motion.h2
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="relative font-display font-extrabold text-4xl md:text-5xl text-white tracking-tight leading-tight"
-        >
-          Want Cassie on<br className="hidden sm:block" /> your server?
-        </motion.h2>
-        <motion.p
-          initial={{ opacity: 0 }}
-          whileInView={{ opacity: 1 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.15 }}
-          className="relative mt-4 text-white/75 max-w-md mx-auto text-base"
-        >
-          Add Cassie in seconds. No setup needed. Protection and utility start working the moment you add it.
-        </motion.p>
-        <motion.div
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ delay: 0.25, ease: [0.34, 1.56, 0.64, 1] }}
-          className="relative mt-9 flex flex-col sm:flex-row items-stretch sm:items-center justify-center gap-3"
-        >
-          <a
-            href={site.bot.inviteUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center justify-center gap-2 bg-white text-[hsl(232,60%,28%)] font-bold px-9 py-4 rounded-full shadow-lg hover:opacity-93 hover:scale-[1.04] transition-all duration-300 text-sm"
-          >
-            Add to Discord <ExternalLink className="h-4 w-4" />
-          </a>
-          <a
-            href={site.bot.supportUrl}
-            target="_blank"
-            rel="noreferrer"
-            className="inline-flex items-center justify-center gap-2 border-2 border-white/40 text-white font-semibold px-9 py-4 rounded-full hover:bg-white/12 hover:scale-[1.04] transition-all duration-300 text-sm"
-          >
-            Support Server
-          </a>
-        </motion.div>
-      </motion.div>
     </section>
   );
 }
