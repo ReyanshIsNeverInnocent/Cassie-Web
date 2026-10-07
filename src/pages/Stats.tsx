@@ -17,7 +17,7 @@ interface BotStats {
   timestamp:        number;
 }
 
-type Phase = 'loading' | 'online' | 'offline';
+type Phase = 'loading' | 'online' | 'delayed' | 'offline';
 
 // ─── Config ───────────────────────────────────────────────────────────────────
 
@@ -27,7 +27,8 @@ type Phase = 'loading' | 'online' | 'offline';
 const POLL_INTERVAL = 30_000;
 const RETRY_INTERVAL = 5_000;
 const MAX_RETRY_INTERVAL = 30_000;
-const MAX_SNAPSHOT_AGE = 2 * 60_000;
+const MAX_SNAPSHOT_AGE = 12 * 60_000;
+const MAX_RETAINED_SNAPSHOT_AGE = 24 * 60 * 60_000;
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -119,7 +120,7 @@ function OfflineCard() {
   );
 }
 
-function SnapshotAge({ receivedAt }: { receivedAt: number }) {
+function SnapshotAge({ timestamp }: { timestamp: number }) {
   const [now, setNow] = useState(() => Date.now());
 
   useEffect(() => {
@@ -127,7 +128,7 @@ function SnapshotAge({ receivedAt }: { receivedAt: number }) {
     return () => window.clearInterval(id);
   }, []);
 
-  return <span className="text-xs text-muted-foreground">Snapshot received {fmtAge(receivedAt, now)}</span>;
+  return <span className="text-xs text-muted-foreground">Snapshot {fmtAge(timestamp, now)}</span>;
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
@@ -135,25 +136,22 @@ function SnapshotAge({ receivedAt }: { receivedAt: number }) {
 export default function Stats() {
   const [phase, setPhase] = useState<Phase>('loading');
   const [data,  setData]  = useState<BotStats | null>(null);
-  const [receivedAt, setReceivedAt] = useState<number | null>(null);
   const [reconnecting, setReconnecting] = useState(false);
   const latestData = useRef<BotStats | null>(null);
   const consecutiveFailures = useRef(0);
 
   const fetchStats = useCallback(async (): Promise<boolean> => {
     try {
-      const res = await fetch('/api/stats', { cache: 'no-store', signal: AbortSignal.timeout(8_000) });
+      const res = await fetch('/api/stats', { signal: AbortSignal.timeout(8_000) });
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
       const json = (await res.json()) as BotStats;
       if (!Number.isFinite(json.timestamp) || json.timestamp <= 0 || json.timestamp > Date.now() + 30_000) {
         throw new Error('Invalid stats snapshot timestamp');
       }
-      const isNewSnapshot = latestData.current?.timestamp !== json.timestamp;
       latestData.current = json;
       consecutiveFailures.current = 0;
       setData(json);
-      if (isNewSnapshot) setReceivedAt(Date.now());
-      setPhase('online');
+      setPhase(Date.now() - json.timestamp > MAX_SNAPSHOT_AGE ? 'delayed' : 'online');
       setReconnecting(false);
       return true;
     } catch {
@@ -161,7 +159,8 @@ export default function Stats() {
       setReconnecting(true);
       const lastSnapshot = latestData.current;
       if (lastSnapshot) {
-        setPhase(Date.now() - lastSnapshot.timestamp > MAX_SNAPSHOT_AGE ? 'offline' : 'online');
+        const snapshotAge = Date.now() - lastSnapshot.timestamp;
+        setPhase(snapshotAge > MAX_RETAINED_SNAPSHOT_AGE ? 'offline' : snapshotAge > MAX_SNAPSHOT_AGE ? 'delayed' : 'online');
       } else if (consecutiveFailures.current >= 2) {
         setPhase('offline');
       }
@@ -249,6 +248,13 @@ export default function Stats() {
                 <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
                 Reconnecting
               </motion.div>
+            ) : phase === 'delayed' ? (
+              <motion.div key="delayed"
+                initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
+                className="liquid-glass px-4 py-2 rounded-full flex items-center gap-2 text-sm font-medium text-muted-foreground">
+                <span className="h-2 w-2 rounded-full bg-amber-400 animate-pulse" />
+                Data delayed
+              </motion.div>
             ) : (
               <motion.div key="offline"
                 initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.9 }}
@@ -262,6 +268,8 @@ export default function Stats() {
 
         </div>
       </motion.div>
+
+      <p className="-mt-6 text-center text-xs text-muted-foreground">Stats refresh automatically every 30 seconds.</p>
 
       {/* ── Metrics ── */}
       <AnimatePresence mode="wait">
@@ -278,7 +286,7 @@ export default function Stats() {
           </motion.div>
         )}
 
-        {phase === 'online' && data && (
+        {(phase === 'online' || phase === 'delayed') && data && (
           <motion.div key="stats" initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }} className="space-y-8">
             <div className="grid grid-cols-2 xl:grid-cols-4 gap-3 sm:gap-4">
               {CARDS.map(({ key, icon, label, note }) => (
@@ -292,7 +300,7 @@ export default function Stats() {
                   <span className="text-xs font-semibold uppercase tracking-[0.18em] text-primary">Under the hood</span>
                   <h2 className="mt-1 font-display font-bold text-2xl">Runtime health</h2>
                 </div>
-                {receivedAt !== null && <SnapshotAge receivedAt={receivedAt} />}
+                <SnapshotAge timestamp={data.timestamp} />
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
@@ -303,7 +311,7 @@ export default function Stats() {
               </div>
             </div>
 
-            <p className="text-center text-xs text-muted-foreground">Stats are published by Cassie and expire automatically if the bot stops reporting.</p>
+            <p className="text-center text-xs text-muted-foreground">If reporting pauses, the last snapshot remains available for up to 24 hours and is marked as delayed.</p>
           </motion.div>
         )}
 

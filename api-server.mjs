@@ -1,13 +1,13 @@
 // Cassie-Web/api-server.mjs
-// Stats API — reads bot-published Cloudflare KV snapshots for GET /api/stats and SSE.
+// Stats API — reads bot-published Supabase snapshots for GET /api/stats and SSE.
 
 import { createServer } from 'http';
-import { getFreshStatsSnapshot } from './server/cloudflareStats.js';
+import { getWebsiteStatsSnapshot } from './server/databaseStats.js';
 
 const PORT      = Number(process.env.STATS_API_PORT ?? 3001);
 
 async function getStats() {
-  return getFreshStatsSnapshot();
+  return getWebsiteStatsSnapshot();
 }
 
 // ── SSE client registry ───────────────────────────────────────────────────────
@@ -22,12 +22,12 @@ function broadcast(stats) {
   }
 }
 
-// ── KV polling — only active while SSE viewers are connected ─────────────────
+// ── Snapshot polling — only active while SSE viewers are connected ────────────
 
 let previousStats = null;
 let streamTimer = null;
 
-async function pollKvSnapshot() {
+async function pollStatsSnapshot() {
   try {
     const stats = await getStats();
     const payload = stats ?? { status: 'offline' };
@@ -37,14 +37,14 @@ async function pollKvSnapshot() {
       broadcast(payload);
     }
   } catch (err) {
-    console.error('[API SERVER] Cloudflare KV stats read failed:', err.message);
+    console.error('[API SERVER] Supabase stats read failed:', err.message);
   }
 }
 
 function startStreamPolling() {
   if (streamTimer) return;
-  void pollKvSnapshot();
-  streamTimer = setInterval(() => void pollKvSnapshot(), 60_000);
+  void pollStatsSnapshot();
+  streamTimer = setInterval(() => void pollStatsSnapshot(), 30_000);
 }
 
 function stopStreamPollingIfIdle() {
@@ -75,7 +75,7 @@ const server = createServer(async (req, res) => {
       res.writeHead(200, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store, no-cache, must-revalidate' });
       res.end(JSON.stringify(stats));
     } catch (err) {
-      console.error('[API SERVER] Error reading Cloudflare KV stats:', err.message);
+      console.error('[API SERVER] Error reading Supabase stats:', err.message);
       res.writeHead(503, { 'Content-Type': 'application/json', 'Cache-Control': 'no-store, no-cache, must-revalidate' });
       res.end(JSON.stringify({ status: 'offline' }));
     }
@@ -172,7 +172,7 @@ async function getDeveloperProfile() {
 
 async function start() {
   server.listen(PORT, () => {
-    console.log(`[API SERVER] Listening on port ${PORT} — Cloudflare KV-backed /api/stats  /api/stats/stream`);
+    console.log(`[API SERVER] Listening on port ${PORT} — Supabase-backed /api/stats  /api/stats/stream`);
   });
 }
 
