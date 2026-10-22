@@ -49,7 +49,7 @@ export const site = {
   // total from `commandCategories` so it can never drift out of sync.
   bot: botConfig,
   // Update this whenever any website source or public-facing website content changes.
-  lastUpdated: "Sunday, August 23, '26 at 08:54 PM (IST, UTC+05:30)",
+  lastUpdated: "Thursday, October 22, '26 at 01:51 PM (IST, UTC+05:30)",
 
   nav: [
     { label: "Home", href: "/" },
@@ -228,6 +228,14 @@ export const site = {
           permission: null,
           description: "Fetch and display YouTube channel details.",
           usage: "$youtube <channel-name-or-id>",
+        },
+        {
+          name: "$ip",
+          aliases: ["iplookup", "ipinfo"],
+          permission: null,
+          description: "Look up an IP address, ASN, PTR, ports, subnet, and abuse reports.",
+          usage:
+            "$ip lookup [ip]\n$ip whois [ip]\n$ip asn [ip]\n$ip ptr [ip]\n$ip ports [ip]\n$ip subnet <ipv4/cidr>\n$ip abuse [ip]",
         },
         {
           name: "$image",
@@ -500,6 +508,13 @@ export const site = {
           permission: "Manage Channels",
           description: "Delete a channel after a confirmation prompt.",
           usage: "$delete-channel [#channel]",
+        },
+        {
+          name: "$rename-channel",
+          aliases: ["renamechannel"],
+          permission: "Manage Channels",
+          description: "Rename a channel.",
+          usage: "$rename-channel <#channel | channel ID | channel name> <new name>",
         },
       ],
     },
@@ -870,6 +885,14 @@ export const site = {
           permission: null,
           description: "Show all commands available to the bot in alphabetical order.",
           usage: "$allcommands",
+          slash: false,
+        },
+        {
+          name: "$allslashcommands",
+          aliases: [],
+          permission: null,
+          description: "Show all slash commands available to the bot.",
+          usage: "$allslashcommands",
           slash: false,
         },
         {
@@ -1311,6 +1334,14 @@ export const site = {
           permission: "Manage Server",
           description: "Toggle whether bot joins trigger the welcome message.",
           usage: "$greet bots [on|off]",
+        },
+        {
+          name: "$giveaway",
+          aliases: ["gstart", "gedit", "gend", "greroll", "gcancel", "glist", "gparticipants", "gentries"],
+          permission: "Manage Server",
+          description: "Start, edit, end, cancel, reroll, list, or inspect giveaway entries.",
+          usage:
+            "$giveaway start <duration> <winners> <prize>\n$giveaway list\n$giveaway participants <message ID>\n$giveaway entries <message ID>\n$giveaway edit <message ID>\n$giveaway end <message ID>\n$giveaway cancel <message ID>\n$giveaway reroll <message ID>",
         },
         {
           name: "$birthday",
