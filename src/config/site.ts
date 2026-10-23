@@ -1072,7 +1072,7 @@ export const site = {
         },
         {
           name: "$grab",
-          aliases: ["save"],
+          aliases: [],
           permission: null,
           description: "DM yourself the currently playing track details.",
           usage: "$grab",
