@@ -49,7 +49,7 @@ export const site = {
   // total from `commandCategories` so it can never drift out of sync.
   bot: botConfig,
   // Update this whenever any website source or public-facing website content changes.
-  lastUpdated: "Thursday, October 22, '26 at 01:51 PM (IST, UTC+05:30)",
+  lastUpdated: "Thursday, October 29, '26 at 12:16 AM (IST, UTC+05:30)",
 
   nav: [
     { label: "Home", href: "/" },
@@ -687,8 +687,8 @@ export const site = {
           aliases: ["re"],
           permission: null,
           description:
-            "React to a message with an emoji; targets the reply or the previous message.",
-          usage: "$react <emoji name or ID>",
+            "React to a message with one or more emojis; targets the reply or the previous message.",
+          usage: "$react <emoji> [emoji ...]",
         },
         {
           name: "$host-image",
@@ -930,8 +930,8 @@ export const site = {
           aliases: ["gp", "ghostpng"],
           permission: "Administrator",
           description:
-            "Ghost-ping users or a role, then instantly delete the message. Role targets are available to the server owner.",
-          usage: "$ghostping <@user1> [@user2] … | <role>",
+            "Ghost-ping up to five users or a role, then instantly delete the message. Role targets are available to the server owner.",
+          usage: "$ghostping <@user1> [@user2] [@user3] [@user4] [@user5] | <role>",
         },
         {
           name: "$whoping",
@@ -1015,8 +1015,8 @@ export const site = {
           name: "$disconnect",
           aliases: ["dsc", "devoice"],
           permission: "Move Members",
-          description: "Disconnect a member from their voice channel.",
-          usage: "$disconnect <@user>",
+          description: "Disconnect one or more members from their voice channels.",
+          usage: "$disconnect [@user ...]",
         },
         {
           name: "$shift",
@@ -1055,6 +1055,7 @@ export const site = {
           description: "Manage 24/7 mode and keep the bot connected to voice.",
           usage: "/247 <enable [channel] | disable | view>",
           slash: true,
+          countAs: "$24/7", // The slash spelling is the same command as the prefix version.
         },
         {
           name: "$add",
@@ -1848,7 +1849,7 @@ export const site = {
 // command *file*, not each documented subcommand row).
 botConfig.commandCount = new Set(
   site.commandCategories.flatMap((cat) =>
-    cat.commands.map((cmd) => cmd.name.split(" ")[0]),
+    cat.commands.map((cmd) => ("countAs" in cmd ? cmd.countAs : cmd.name.split(" ")[0])),
   ),
 ).size;
 
