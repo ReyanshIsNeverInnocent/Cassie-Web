@@ -49,7 +49,7 @@ export const site = {
   // total from `commandCategories` so it can never drift out of sync.
   bot: botConfig,
   // Update this whenever any website source or public-facing website content changes.
-  lastUpdated: "Thursday, October 29, '26 at 12:16 AM (IST, UTC+05:30)",
+  lastUpdated: "Thursday, November 5, '26 at 2:11 AM (IST, UTC+05:30)",
 
   nav: [
     { label: "Home", href: "/" },
@@ -132,6 +132,14 @@ export const site = {
           permission: null,
           description: "Interactive CV2 help menu with category navigation.",
           usage: "$help [category]",
+        },
+        {
+          name: "$placeholder-help",
+          aliases: ["placeholders", "ph", "phhelp"],
+          permission: null,
+          description:
+            "Paginated reference for all available placeholder tokens.",
+          usage: "$placeholder-help",
         },
         {
           name: "$ping",
@@ -636,15 +644,6 @@ export const site = {
           usage: "$reactionsnipe [#channel]",
         },
         {
-          name: "$vanityrole",
-          aliases: ["vr", "vanityroles"],
-          permission: "Manage Server",
-          description:
-            "Auto-assign roles based on a status/bio keyword or the server tag.",
-          usage:
-            "$vanityrole\n$vanityrole status\n$vanityrole bio\n$vanityrole tag",
-        },
-        {
           name: "$list",
           aliases: ["ls"],
           permission: null,
@@ -691,14 +690,6 @@ export const site = {
           usage: "$react <emoji> [emoji ...]",
         },
         {
-          name: "$host-image",
-          aliases: ["hostimage", "imgbb", "upload-image"],
-          permission: null,
-          description:
-            "Upload an image (attachment or URL) and get back hosted links.",
-          usage: "$host-image <attachment>\n$host-image <image URL>",
-        },
-        {
           name: "$emoji",
           aliases: [],
           permission: "Manage Guild Expressions",
@@ -713,14 +704,6 @@ export const site = {
             "Steal one or more custom emojis or image files into this server as emojis or stickers.",
           usage:
             "$steal <emoji | emoji ID | emoji markdown | emoji name> ...\n$steal <image URL> ...\nReply to a message containing emojis or image files, then use $steal",
-        },
-        {
-          name: "$placeholder-help",
-          aliases: ["placeholders", "ph", "phhelp"],
-          permission: null,
-          description:
-            "Paginated reference for all available placeholder tokens.",
-          usage: "$placeholder-help",
         },
         {
           name: "$say",
@@ -850,20 +833,13 @@ export const site = {
           usage: "$noprefix\n$noprefix on\n$noprefix off\n$noprefix status\n$noprefix server enable\n$noprefix server disable",
         },
         {
-          name: "$glnoprefix",
-          aliases: ["gnop"],
+          name: "$globalnoprefix",
+          aliases: ["gnop", "gnoprefix"],
           permission: "Developer",
           description:
             "Manage global noprefix grants and control another user's global or server-specific noprefix setting.",
           usage:
-            "$glnoprefix add <user> [duration]\n$glnoprefix remove <user>\n$glnoprefix extend <user> <duration>\n$glnoprefix makeperm <user>\n$glnoprefix list\n$glnoprefix status <user>\n$glnoprefix user <user> enable|disable\n$glnoprefix user <user> server enable|disable\n$glnoprefix enable|disable\n$glnoprefix server enable|disable/list [server ID]",
-        },
-        {
-          name: "$autonick",
-          aliases: ["automaticnick"],
-          permission: "Manage Server",
-          description: "Configure text prepended or appended to new members and bots.",
-          usage: "$autonick [member | bot] prepend <text>\n$autonick [member | bot] append <text>\n$autonick reset [member | bot | all] [prepend | append | all]\n$autonick status",
+            "$globalnoprefix add <user> [duration]\n$globalnoprefix remove <user>\n$globalnoprefix extend <user> <duration>\n$globalnoprefix makeperm <user>\n$globalnoprefix list\n$globalnoprefix status <user>\n$globalnoprefix user <user> enable|disable\n$globalnoprefix user <user> server enable|disable\n$globalnoprefix enable|disable\n$globalnoprefix server enable|disable/list [server ID]",
         },
       ],
     },
@@ -1247,6 +1223,21 @@ export const site = {
           usage: "$afk [reason]",
         },
         {
+          name: "$autonick",
+          aliases: ["automaticnick"],
+          permission: "Manage Nicknames",
+          description: "Configure text prepended or appended to new members and bots.",
+          usage: "$autonick [member | bot] prepend <text>\n$autonick [member | bot] append <text>\n$autonick reset [member | bot | all] [prepend | append | all]\n$autonick status",
+        },
+        {
+          name: "$host-image",
+          aliases: ["hostimage", "imgbb", "upload-image"],
+          permission: null,
+          description:
+            "Upload an image (attachment or URL) and get back hosted links.",
+          usage: "$host-image <attachment>\n$host-image <image URL>",
+        },
+        {
           name: "$sticky",
           aliases: [],
           permission: "Manage Server",
@@ -1254,6 +1245,15 @@ export const site = {
             "Manage sticky messages: re-posted at the bottom on every new message.",
           usage:
             "$sticky set text <content>\n$sticky enable\n$sticky disable\n$sticky view",
+        },
+        {
+          name: "$vanityrole",
+          aliases: ["vr", "vanityroles"],
+          permission: "Manage Server",
+          description:
+            "Auto-assign roles based on a status/bio keyword or the server tag.",
+          usage:
+            "$vanityrole\n$vanityrole status\n$vanityrole bio\n$vanityrole tag",
         },
         {
           name: "$honeypot",
