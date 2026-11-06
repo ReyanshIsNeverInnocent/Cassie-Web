@@ -49,7 +49,7 @@ export const site = {
   // total from `commandCategories` so it can never drift out of sync.
   bot: botConfig,
   // Update this whenever any website source or public-facing website content changes.
-  lastUpdated: "Thursday, November 5, '26 at 2:11 AM (IST, UTC+05:30)",
+  lastUpdated: "Friday, November 6, '26 at 3:01 PM (IST, UTC+05:30)",
 
   nav: [
     { label: "Home", href: "/" },
@@ -377,10 +377,18 @@ export const site = {
         {
           name: "$masskick",
           aliases: ["mkick"],
-          permission: "Kick Members",
+          permission: "Server Owner",
           description:
-            "Kick all members matching criteria (with confirmation).",
-          usage: "$masskick [filter]",
+            "Kick up to 50 specified members after confirmation. Server owner only; 10-second cooldown.",
+          usage: "$masskick <user> <user> ...",
+        },
+        {
+          name: "$massban",
+          aliases: [],
+          permission: "Server Owner",
+          description:
+            "Ban up to 50 specified members after confirmation. Server owner only; 10-second cooldown.",
+          usage: "$massban <user> <user> ...",
         },
         {
           name: "$softban",
@@ -908,6 +916,22 @@ export const site = {
           description:
             "Ghost-ping up to five users or a role, then instantly delete the message. Role targets are available to the server owner.",
           usage: "$ghostping <@user1> [@user2] [@user3] [@user4] [@user5] | <role>",
+        },
+        {
+          name: "$freakylock",
+          aliases: [],
+          permission: "Administrator / Server Owner / Bot Developer",
+          description:
+            "Toggle a server-wide lock that reposts a member's messages in fancy script. Requires Manage Webhooks and Manage Messages.",
+          usage: "$freakylock <user>",
+        },
+        {
+          name: "$uwulock",
+          aliases: [],
+          permission: "Administrator / Server Owner / Bot Developer",
+          description:
+            "Toggle a server-wide UwU text transformation for a member. Requires Manage Webhooks and Manage Messages.",
+          usage: "$uwulock <user>",
         },
         {
           name: "$whoping",
@@ -1693,6 +1717,13 @@ export const site = {
           permission: null,
           description: "Generate a compatibility image for two users.",
           usage: "$ship <@user1> <@user2>",
+        },
+        {
+          name: "$flames",
+          aliases: [],
+          permission: null,
+          description: "Calculate the FLAMES relationship result for two names or Discord users.",
+          usage: '$flames <name> <name>\n$flames "name with spaces" "another name"',
         },
         {
           name: "$howgay",
