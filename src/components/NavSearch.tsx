@@ -2,16 +2,11 @@ import { useState, useRef, useEffect, useMemo, forwardRef, useImperativeHandle }
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { Search, CornerDownLeft } from 'lucide-react';
-import { site } from '@/config/site';
+import { useCommandCatalog } from '@/config/commandCatalog';
 
 export interface NavSearchHandle {
   focus: () => void;
 }
-
-type Category = {
-  name: string;
-  commands: Array<{ name: string; description: string; usage: string }>;
-};
 
 /**
  * Global command search, mounted in the navbar. Lets users jump to any
@@ -28,12 +23,11 @@ const NavSearch = forwardRef<NavSearchHandle, { className?: string }>(function N
   const wrapRef   = useRef<HTMLDivElement>(null);
   const [query, setQuery]     = useState('');
   const [open,  setOpen]      = useState(false);
+  const categories = useCommandCatalog();
 
   useImperativeHandle(outerRef, () => ({
     focus: () => inputRef.current?.focus(),
   }));
-
-  const categories = site.commandCategories as unknown as Category[];
 
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();

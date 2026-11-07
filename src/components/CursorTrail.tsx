@@ -17,9 +17,14 @@ export default function CursorTrail() {
   const rafId    = useRef<number>(0);
 
   useEffect(() => {
+    const scheduleTick = () => {
+      if (!rafId.current) rafId.current = requestAnimationFrame(tick);
+    };
+
     const onMove = (e: MouseEvent) => {
       cursor.current.x = e.clientX;
       cursor.current.y = e.clientY;
+      scheduleTick();
     };
 
     const onOver = (e: MouseEvent) => {
@@ -27,6 +32,7 @@ export default function CursorTrail() {
       hovering.current = !!el.closest(
         'button, a, [role="button"], select, label, input, textarea',
       );
+      scheduleTick();
     };
 
     window.addEventListener('mousemove', onMove, { passive: true });
@@ -45,10 +51,17 @@ export default function CursorTrail() {
           `translate(${pos.current.x - s / 2}px, ${pos.current.y - s / 2}px)`;
       }
 
-      rafId.current = requestAnimationFrame(tick);
+      if (
+        Math.abs(cursor.current.x - pos.current.x) > 0.1 ||
+        Math.abs(cursor.current.y - pos.current.y) > 0.1
+      ) {
+        rafId.current = requestAnimationFrame(tick);
+      } else {
+        pos.current.x = cursor.current.x;
+        pos.current.y = cursor.current.y;
+        rafId.current = 0;
+      }
     };
-
-    rafId.current = requestAnimationFrame(tick);
 
     return () => {
       window.removeEventListener('mousemove', onMove);

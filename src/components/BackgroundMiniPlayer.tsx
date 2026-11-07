@@ -29,8 +29,6 @@ export default function BackgroundMiniPlayer() {
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
   const audioRef = useRef<HTMLAudioElement | null>(null);
-  const nextAudioPreloadRef = useRef<HTMLAudioElement | null>(null);
-  const nextCoverPreloadRef = useRef<HTMLImageElement | null>(null);
   const playbackIntentRef = useRef(false);
   const playAttemptRef = useRef(0);
   const trackKeyRef = useRef(defaultTrackKey);
@@ -48,6 +46,9 @@ export default function BackgroundMiniPlayer() {
     if (!audio) return;
 
     playbackIntentRef.current = true;
+    if (loadedTrackKeyRef.current !== trackKeyRef.current) {
+      loadTrack(trackKeyRef.current);
+    }
     const attempt = ++playAttemptRef.current;
     try {
       if (audio.paused) {
@@ -89,19 +90,9 @@ export default function BackgroundMiniPlayer() {
 
     audio.pause();
     audio.currentTime = 0;
+    audio.preload = playbackIntentRef.current ? 'auto' : 'none';
     audio.src = `/audio/${nextTrackKey}`;
     audio.load();
-
-    const currentIndex = trackEntries.indexOf(nextTrackKey);
-    const nextKey = trackEntries[(currentIndex + 1) % trackEntries.length];
-    const nextTrack = backgroundMusicTracks[nextKey];
-    const nextAudio = nextAudioPreloadRef.current;
-    if (nextAudio) {
-      nextAudio.src = `/audio/${nextKey}`;
-      nextAudio.load();
-    }
-    const nextCover = nextCoverPreloadRef.current;
-    if (nextCover && nextTrack) nextCover.src = nextTrack.cover;
   };
 
   const cycleTrack = (direction: 1 | -1) => {
@@ -122,15 +113,9 @@ export default function BackgroundMiniPlayer() {
     audio.loop = false;
     audio.volume = 0.25;
     audio.muted = false;
-    audio.preload = 'auto';
+    audio.preload = 'none';
     audioRef.current = audio;
     loadedTrackKeyRef.current = null;
-    const nextAudioPreload = new Audio();
-    nextAudioPreload.preload = 'auto';
-    nextAudioPreloadRef.current = nextAudioPreload;
-    const nextCoverPreload = new Image();
-    nextCoverPreload.decoding = 'async';
-    nextCoverPreloadRef.current = nextCoverPreload;
 
     const onLoadedMetadata = () => setDuration(Number.isFinite(audio.duration) ? audio.duration : 0);
     const onTimeUpdate = () => setCurrentTime(audio.currentTime || 0);
@@ -163,11 +148,7 @@ export default function BackgroundMiniPlayer() {
       audio.removeAttribute('src');
       audio.load();
       loadedTrackKeyRef.current = null;
-      nextAudioPreload.removeAttribute('src');
-      nextAudioPreload.load();
       audioRef.current = null;
-      nextAudioPreloadRef.current = null;
-      nextCoverPreloadRef.current = null;
       audio.removeEventListener('loadedmetadata', onLoadedMetadata);
       audio.removeEventListener('timeupdate', onTimeUpdate);
       audio.removeEventListener('play', onPlay);
@@ -181,13 +162,14 @@ export default function BackgroundMiniPlayer() {
     const audio = audioRef.current;
     if (!audio || loadedTrackKeyRef.current === trackKey) return;
 
-    loadTrack(trackKey);
-
-    if (playbackIntentRef.current) {
-      void startPlayback();
-    } else {
+    trackKeyRef.current = trackKey;
+    if (!playbackIntentRef.current) {
       setIsPlaying(false);
+      return;
     }
+
+    loadTrack(trackKey);
+    void startPlayback();
   }, [trackKey]);
 
   const progressPercent = duration > 0 ? (currentTime / duration) * 100 : 0;

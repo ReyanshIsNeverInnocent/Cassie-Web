@@ -2,27 +2,23 @@ import { useState, useEffect, useMemo } from 'react';
 import { useSearchParams } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Search, X, ShieldCheck } from 'lucide-react';
-import { site } from '@/config/site';
-
-type CommandEntry = {
-  name: string;
-  description: string;
-  usage: string;
-  aliases?: readonly string[];
-  permission?: string | null;
-  slash?: boolean;
-};
-
-type CatalogCategory = {
-  name: string;
-  icon: React.ElementType;
-  commands: CommandEntry[];
-};
+import { useCommandCatalog, type CommandEntry } from '@/config/commandCatalog';
 
 const byName = (a: CommandEntry, b: CommandEntry) => a.name.localeCompare(b.name);
 const baseCommandName = (name: string) => name.trim().split(/\s+/)[0].toLowerCase();
 const uniqueCommandCount = (commands: CommandEntry[]) =>
   new Set(commands.map((command) => baseCommandName(command.name))).size;
+
+function cooldownLabels(cooldown: CommandEntry['cooldown']): string[] {
+  if (cooldown === undefined) return [];
+  if (typeof cooldown === 'number') return [`Cooldown: ${cooldown}s`];
+
+  const labels = [`Cooldown: ${cooldown.default ?? 0}s`];
+  for (const [subcommand, seconds] of Object.entries(cooldown.subcommands ?? {})) {
+    labels.push(`${subcommand}: ${seconds}s`);
+  }
+  return labels;
+}
 
 function matchesQuery(command: CommandEntry, query: string): boolean {
   return (
@@ -61,7 +57,15 @@ function CommandCard({
         )}
       </div>
       <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{command.description}</p>
-      {(command.aliases?.length || command.permission || command.slash === false) && (
+      {(command.aliases?.length ||
+        command.permission ||
+        command.slash !== undefined ||
+        command.cooldown !== undefined ||
+        command.ownerOnly ||
+        command.serverOwnerOnly ||
+        command.trustedAdministrator ||
+        command.userPerms?.length ||
+        command.botPerms?.length) && (
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
           {command.aliases?.map((alias) => (
             <code
@@ -71,18 +75,80 @@ function CommandCard({
               {alias}
             </code>
           ))}
-          {command.permission && (
+          {command.permission && !command.userPerms?.length && (
             <span className="inline-flex items-center gap-1 text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-500 border border-amber-500/20">
               <ShieldCheck className="h-2.5 w-2.5" />
               {command.permission}
             </span>
           )}
-          {command.slash === false && (
+          {command.prefix === false && (
+            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-sky-500/10 text-sky-500 border border-sky-500/20">
+              Slash only
+            </span>
+          )}
+          {command.prefix !== false && command.slash === false && (
             <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-sky-500/10 text-sky-500 border border-sky-500/20">
               Prefix only
             </span>
           )}
+          {command.slash && (
+            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-sky-500/10 text-sky-500 border border-sky-500/20">
+              Slash command
+            </span>
+          )}
+          {cooldownLabels(command.cooldown).map((label) => (
+            <span
+              key={label}
+              className="text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-muted text-muted-foreground border border-border/60"
+            >
+              {label}
+            </span>
+          ))}
+          {command.botPerms?.map((permission) => (
+            <span
+              key={`bot-${permission}`}
+              className="text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-amber-500/10 text-amber-500 border border-amber-500/20"
+            >
+              Bot: {permission}
+            </span>
+          ))}
+          {command.ownerOnly && (
+            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-rose-500/10 text-rose-500 border border-rose-500/20">
+              Bot owner only
+            </span>
+          )}
+          {command.serverOwnerOnly && (
+            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-rose-500/10 text-rose-500 border border-rose-500/20">
+              Server owner only
+            </span>
+          )}
+          {command.trustedAdministrator && (
+            <span className="text-[10px] font-medium px-1.5 py-0.5 rounded-md bg-rose-500/10 text-rose-500 border border-rose-500/20">
+              Trusted administrators
+            </span>
+          )}
         </div>
+      )}
+      {command.userPerms && command.userPerms.length > 0 && (
+        <p className="mt-2 text-xs text-muted-foreground">
+          <span className="font-semibold">Required user permissions:</span>{' '}
+          {command.userPerms.join(', ')}
+        </p>
+      )}
+      {(command.commandOptions || command.slashCommand) && (
+        <details className="mt-3 text-xs text-muted-foreground">
+          <summary className="cursor-pointer font-medium hover:text-foreground">All command metadata</summary>
+          <pre className="mt-2 overflow-x-auto rounded-lg bg-muted/50 p-3 text-[10px] leading-relaxed">
+            {JSON.stringify(
+              {
+                commandOptions: command.commandOptions,
+                slashCommand: command.slashCommand,
+              },
+              null,
+              2,
+            )}
+          </pre>
+        </details>
       )}
       <div className="mt-3 cmd-usage">{command.usage}</div>
     </div>
@@ -90,7 +156,7 @@ function CommandCard({
 }
 
 export default function Commands() {
-  const categories = site.commandCategories as unknown as CatalogCategory[];
+  const categories = useCommandCatalog();
 
   const [searchParams, setSearchParams] = useSearchParams();
   const [query, setQuery] = useState(searchParams.get('q') ?? '');

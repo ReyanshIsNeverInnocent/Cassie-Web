@@ -8,6 +8,7 @@ import {
 } from 'framer-motion';
 import { ArrowRight, ExternalLink, Terminal, ChevronDown } from 'lucide-react';
 import { site } from '@/config/site';
+import { getUniqueCommandCount, useCommandCatalog } from '@/config/commandCatalog';
 import Cta from '@/components/Cta';
 import FeatureCards from '@/components/FeatureCards';
 
@@ -310,6 +311,8 @@ function Reveal({
    Hero
 ───────────────────────────────────────────────────────────────────────────── */
 function Hero() {
+  const commandCategories = useCommandCatalog();
+  const commandCount = getUniqueCommandCount(commandCategories);
   const stageRef = useRef<HTMLDivElement>(null);
   const mx = useMotionValue(0); const my = useMotionValue(0);
   const sx = useSpring(mx, { stiffness: 70, damping: 15, mass: 0.5 });
@@ -418,7 +421,7 @@ function Hero() {
           {/* Stats */}
           <div className="mt-10 flex gap-4 flex-wrap">
             {[
-              { label: 'Commands', value: `${site.bot.commandCount}+`, duration: 2.2 },
+              { label: 'Commands', value: `${commandCount}+`, duration: 2.2 },
               { label: 'Uptime',   value: site.bot.uptime,              duration: 1.55 },
               { label: 'Prefix',   value: site.bot.prefix,             duration: 0.9 },
             ].map((s) => (
@@ -519,7 +522,7 @@ function Hero() {
                 className="font-display font-bold"
                 style={{ background: 'var(--gradient-text)', WebkitBackgroundClip: 'text', WebkitTextFillColor: 'transparent', backgroundClip: 'text' }}
               >
-                {site.bot.commandCount}+
+                {commandCount}+
               </div>
             </motion.div>
 
@@ -549,6 +552,8 @@ function Hero() {
    Features
 ───────────────────────────────────────────────────────────────────────────── */
 function Features() {
+  const commandCategories = useCommandCatalog();
+  const commandCount = getUniqueCommandCount(commandCategories);
   return (
     <section className="container max-w-5xl py-20 relative">
       <FloatingDecor className="absolute -top-4 right-4 md:right-16" size={36} duration={5.5} rotate={7}>
@@ -578,7 +583,7 @@ function Features() {
           to="/commands"
           className="inline-flex items-center gap-2 text-sm font-medium text-primary hover:underline underline-offset-4 transition-colors"
         >
-          Browse all {site.bot.commandCount}+ commands <ArrowRight className="h-3.5 w-3.5" />
+          Browse all {commandCount}+ commands <ArrowRight className="h-3.5 w-3.5" />
         </Link>
       </motion.div>
     </section>

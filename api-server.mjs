@@ -1,8 +1,9 @@
 // Cassie-Web/api-server.mjs
-// Stats API — reads bot-published Supabase snapshots for GET /api/stats and SSE.
+// Website API — reads bot-published PostgreSQL snapshots for stats and commands.
 
 import { createServer } from 'http';
 import { getWebsiteStatsSnapshot } from './server/databaseStats.js';
+import { getWebsiteCommandSnapshot } from './server/databaseCommands.js';
 
 const PORT      = Number(process.env.STATS_API_PORT ?? 3001);
 
@@ -62,6 +63,41 @@ const server = createServer(async (req, res) => {
   if (req.method === 'OPTIONS') { res.writeHead(204); res.end(); return; }
 
   const url = req.url?.split('?')[0];
+
+  if (url === '/api/commands') {
+    if (req.method !== 'GET' && req.method !== 'HEAD') {
+      res.writeHead(405, { Allow: 'GET, HEAD', 'Content-Type': 'application/json' });
+      res.end(JSON.stringify({ error: 'Method not allowed' }));
+      return;
+    }
+
+    try {
+      const snapshot = await getWebsiteCommandSnapshot();
+      if (!snapshot) {
+        res.writeHead(503, {
+          'Content-Type': 'application/json',
+          'Cache-Control': 'no-store, no-cache, must-revalidate',
+        });
+        res.end(JSON.stringify({ error: 'The bot has not published a command catalog yet' }));
+        return;
+      }
+
+      res.writeHead(200, {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'public, s-maxage=300, stale-while-revalidate=300',
+      });
+      res.end(JSON.stringify(snapshot));
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      console.error('[API SERVER] PostgreSQL command catalog read failed:', message);
+      res.writeHead(503, {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store, no-cache, must-revalidate',
+      });
+      res.end(JSON.stringify({ error: 'Command catalog is temporarily unavailable' }));
+    }
+    return;
+  }
 
   // ── One-shot JSON ──────────────────────────────────────────────────────────
   if (url === '/api/stats') {
